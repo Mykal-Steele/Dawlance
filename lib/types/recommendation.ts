@@ -17,6 +17,8 @@ export interface Recommendation {
   openingHours: string;
   culturalNotes: string;
   imageUrl: string;
+  imageSource?: "places" | "unsplash" | "placeholder";
+  blurDataURL?: string;
   tags: string[];
 }
 

@@ -8,5 +8,6 @@
 
 export * from "./destination.schema";
 export * from "./preferences.schema";
+export * from "./itinerary-validation";
 
 // Made with Bob

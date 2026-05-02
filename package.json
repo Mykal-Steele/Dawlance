@@ -17,6 +17,7 @@
   "dependencies": {
     "@fontsource/be-vietnam-pro": "^5.2.8",
     "@fontsource/plus-jakarta-sans": "^5.2.8",
+    "@google/genai": "^1.51.0",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-select": "^2.2.6",
