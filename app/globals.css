@@ -58,6 +58,78 @@
   --font-headline: var(--font-headline);
 }
 
+@theme {
+  /* Primary */
+  --color-primary: #2a7bff;
+  --color-primary-50: #e6f0ff;
+  --color-primary-100: #cce1ff;
+  --color-primary-200: #99c3ff;
+  --color-primary-300: #66a5ff;
+  --color-primary-400: #3387ff;
+  --color-primary-500: #2a7bff;
+  --color-primary-600: #0062e6;
+  --color-primary-700: #004ab3;
+  --color-primary-800: #003280;
+  --color-primary-900: #001a4d;
+
+  /* Secondary */
+  --color-secondary: #6dd3b0;
+  --color-secondary-50: #f0fbf7;
+  --color-secondary-100: #e1f7ef;
+  --color-secondary-200: #c3efdf;
+  --color-secondary-300: #a5e7cf;
+  --color-secondary-400: #87dfbf;
+  --color-secondary-500: #6dd3b0;
+  --color-secondary-600: #4ac299;
+  --color-secondary-700: #3aa17a;
+  --color-secondary-800: #2a7a5b;
+  --color-secondary-900: #1a533c;
+
+  /* Tertiary */
+  --color-tertiary: #ff8c42;
+  --color-tertiary-50: #fff4ed;
+  --color-tertiary-100: #ffe9db;
+  --color-tertiary-200: #ffd3b7;
+  --color-tertiary-300: #ffbd93;
+  --color-tertiary-400: #ffa76f;
+  --color-tertiary-500: #ff8c42;
+  --color-tertiary-600: #ff6b0a;
+  --color-tertiary-700: #d15400;
+  --color-tertiary-800: #993d00;
+  --color-tertiary-900: #612700;
+
+  /* Neutral */
+  --color-neutral: #f8f9fa;
+  --color-neutral-50: #ffffff;
+  --color-neutral-100: #f8f9fa;
+  --color-neutral-200: #e9ecef;
+  --color-neutral-300: #dee2e6;
+  --color-neutral-400: #ced4da;
+  --color-neutral-500: #adb5bd;
+  --color-neutral-600: #6c757d;
+  --color-neutral-700: #495057;
+  --color-neutral-800: #343a40;
+  --color-neutral-900: #212529;
+
+  /* Text */
+  --color-text: #3d4852;
+  --color-text-light: #6c757d;
+  --color-text-lighter: #adb5bd;
+
+  /* Border radius */
+  --radius-card: 12px;
+  --radius-button: 8px;
+  --radius-input: 8px;
+
+  /* Shadows */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-button: 0 2px 4px rgba(42, 123, 255, 0.2);
+
+  /* Spacing */
+  --spacing-safe-bottom: env(safe-area-inset-bottom);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -133,15 +205,16 @@ body {
 }
 
 /* Headline Typography */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-headline), system-ui, sans-serif;
-  font-weight: 700;
-  color: var(--color-text);
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-headline), system-ui, sans-serif;
+    font-weight: 700;
+  }
 }
 
 /* Smooth Scrolling */
