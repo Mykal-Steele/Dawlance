@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface RecommendationSkeletonProps {
   className?: string;
@@ -6,12 +6,12 @@ interface RecommendationSkeletonProps {
 
 export function RecommendationSkeleton({ className }: RecommendationSkeletonProps) {
   return (
-    <div className={cn('overflow-hidden rounded-2xl bg-white shadow-sm', className)}>
+    <div className={cn("overflow-hidden rounded-2xl bg-white shadow-sm", className)}>
       {/* Image placeholder */}
       <div className="aspect-[4/3] animate-pulse bg-gray-200" />
 
       {/* Content */}
-      <div className="p-4 space-y-3">
+      <div className="space-y-3 p-4">
         {/* Badge */}
         <div className="h-5 w-20 animate-pulse rounded-full bg-gray-200" />
         {/* Title */}

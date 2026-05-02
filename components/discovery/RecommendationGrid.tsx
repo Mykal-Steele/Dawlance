@@ -1,13 +1,20 @@
-import type { Recommendation } from '@/lib/types';
-import { RecommendationCard } from './RecommendationCard';
+import type { Recommendation } from "@/lib/types";
+import { RecommendationCard } from "./RecommendationCard";
 
 interface RecommendationGridProps {
   recommendations: Recommendation[];
   selectedIds: Set<string>;
   onToggle: (rec: Recommendation) => void;
+  /** Map of recommendation id → reason why it can't be selected (criteria mismatch). */
+  disabledReasons?: Map<string, string>;
 }
 
-export function RecommendationGrid({ recommendations, selectedIds, onToggle }: RecommendationGridProps) {
+export function RecommendationGrid({
+  recommendations,
+  selectedIds,
+  onToggle,
+  disabledReasons,
+}: RecommendationGridProps) {
   if (recommendations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -38,6 +45,7 @@ export function RecommendationGrid({ recommendations, selectedIds, onToggle }: R
           recommendation={rec}
           isSelected={selectedIds.has(rec.id)}
           onToggle={onToggle}
+          disabledReason={disabledReasons?.get(rec.id)}
         />
       ))}
     </div>

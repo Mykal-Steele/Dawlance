@@ -55,6 +55,24 @@ async function fetchPlacesImage(name: string, destination: string): Promise<stri
   }
 }
 
+/**
+ * Fetch an image URL directly from a Places API photo reference name.
+ * Used when we already have the photo name from a Places API response.
+ */
+export async function fetchPlacesPhotoByRef(photoName: string): Promise<string | null> {
+  if (!GOOGLE_MAPS_API_KEY) return null;
+  try {
+    const res = await fetch(
+      `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=800&skipHttpRedirect=true&key=${GOOGLE_MAPS_API_KEY}`
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as { photoUri?: string };
+    return data.photoUri ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function fetchUnsplashImage(query: string): Promise<string | null> {
   if (!UNSPLASH_ACCESS_KEY) return null;
 

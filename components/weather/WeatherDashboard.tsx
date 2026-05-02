@@ -25,7 +25,12 @@ async function fetchWeather(
 
 function toDateString(date: Date | string | null): string {
   if (!date) return "";
-  if (date instanceof Date) return date.toISOString().split("T")[0];
+  if (date instanceof Date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
   return String(date).split("T")[0];
 }
 
@@ -67,9 +72,7 @@ export function WeatherDashboard() {
       <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
         <div className="mb-2 text-3xl">⚠️</div>
         <h3 className="mb-2 font-semibold text-red-700">Could not load weather</h3>
-        <p className="text-sm text-red-600">
-          {error?.message ?? "Please try again."}
-        </p>
+        <p className="text-sm text-red-600">{error?.message ?? "Please try again."}</p>
       </div>
     );
   }

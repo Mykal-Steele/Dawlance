@@ -5,5 +5,5 @@ export { BudgetSelector } from "./BudgetSelector";
 export { TransportationSelector } from "./TransportationSelector";
 export { GroupDynamicsSelector } from "./GroupDynamicsSelector";
 export { PaceSlider } from "./PaceSlider";
-
-// Made with Bob
+export { CityAutocomplete } from "./CityAutocomplete";
+export { DateRangePicker } from "./DateRangePicker";

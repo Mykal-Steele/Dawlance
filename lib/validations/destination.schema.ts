@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Validation schema for destination and travel dates
- * 
+ *
  * Validates:
  * - Destination name (min 2 characters)
  * - Start and end dates
@@ -15,12 +15,28 @@ export const destinationSchema = z
       .string()
       .min(2, "Destination must be at least 2 characters")
       .max(100, "Destination must be less than 100 characters"),
-    startDate: z.coerce.date({
-      message: "Start date must be a valid date",
-    }),
-    endDate: z.coerce.date({
-      message: "End date must be a valid date",
-    }),
+    startDate: z
+      .string()
+      .min(1, "Start date is required")
+      .transform((s, ctx) => {
+        const d = new Date(`${s}T12:00:00`);
+        if (isNaN(d.getTime())) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Start date must be a valid date" });
+          return z.NEVER;
+        }
+        return d;
+      }),
+    endDate: z
+      .string()
+      .min(1, "End date is required")
+      .transform((s, ctx) => {
+        const d = new Date(`${s}T12:00:00`);
+        if (isNaN(d.getTime())) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: "End date must be a valid date" });
+          return z.NEVER;
+        }
+        return d;
+      }),
   })
   .refine((data) => data.endDate > data.startDate, {
     message: "End date must be after start date",

@@ -398,7 +398,7 @@ export default function LandingPage() {
             ].map((step, index) => (
               <div key={index} className="relative">
                 <div className="group rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-md transition-all duration-300 hover:shadow-xl">
-                  <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2A7BFF] to-[#6DD3B0] text-white transition-transform duration-300 group-hover:scale-110">
+                  <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-[#2A7BFF] to-[#6DD3B0] text-white transition-transform duration-300 group-hover:scale-110">
                     {step.icon}
                   </div>
                   <div className="mb-3 text-sm font-bold text-[#2A7BFF]">Step {index + 1}</div>
@@ -423,7 +423,7 @@ export default function LandingPage() {
           <div className="mt-16 text-center">
             <Link
               href="/plan/destination"
-              className="inline-flex transform items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-[#2A7BFF] to-[#6DD3B0] px-12 py-5 text-lg font-semibold text-white transition-all hover:-translate-y-1 hover:shadow-2xl"
+              className="inline-flex transform items-center justify-center gap-3 rounded-xl bg-linear-to-r from-[#2A7BFF] to-[#6DD3B0] px-12 py-5 text-lg font-semibold text-white transition-all hover:-translate-y-1 hover:shadow-2xl"
             >
               Start Your Journey Now
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -435,32 +435,6 @@ export default function LandingPage() {
                 />
               </svg>
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Social Proof Section */}
-      <section className="bg-gradient-to-r from-[#2A7BFF] to-[#1a5fd9] px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-12 text-center md:grid-cols-3">
-            <div className="group">
-              <div className="mb-3 text-5xl font-bold text-white transition-transform duration-300 group-hover:scale-110">
-                10K+
-              </div>
-              <div className="text-xl font-medium text-white/90">Trips Planned</div>
-            </div>
-            <div className="group">
-              <div className="mb-3 text-5xl font-bold text-white transition-transform duration-300 group-hover:scale-110">
-                150+
-              </div>
-              <div className="text-xl font-medium text-white/90">Destinations</div>
-            </div>
-            <div className="group">
-              <div className="mb-3 text-5xl font-bold text-white transition-transform duration-300 group-hover:scale-110">
-                4.9★
-              </div>
-              <div className="text-xl font-medium text-white/90">User Rating</div>
-            </div>
           </div>
         </div>
       </section>

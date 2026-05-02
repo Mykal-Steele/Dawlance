@@ -8,11 +8,7 @@ interface ItineraryStore {
   canUndo: boolean;
   canRedo: boolean;
   updateItinerary: (itinerary: Itinerary | null) => void;
-  editActivity: (
-    dayIndex: number,
-    activityIndex: number,
-    changes: Partial<Activity>
-  ) => void;
+  editActivity: (dayIndex: number, activityIndex: number, changes: Partial<Activity>) => void;
   undo: () => void;
   redo: () => void;
 }
@@ -39,10 +35,9 @@ export const useItineraryStore = create<ItineraryStore>((set, _get) => ({
       }
 
       // Add to history, removing any "future" states if we're not at the end
-      const newHistory = [
-        ...state.history.slice(0, state.historyIndex + 1),
-        itinerary,
-      ].slice(-MAX_HISTORY);
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), itinerary].slice(
+        -MAX_HISTORY
+      );
 
       const newIndex = newHistory.length - 1;
 
@@ -55,19 +50,17 @@ export const useItineraryStore = create<ItineraryStore>((set, _get) => ({
       };
     }),
 
-  editActivity: (
-    dayIndex: number,
-    activityIndex: number,
-    changes: Partial<Activity>
-  ) =>
+  editActivity: (dayIndex: number, activityIndex: number, changes: Partial<Activity>) =>
     set((state) => {
       if (!state.itinerary) return state;
 
       const newItinerary = { ...state.itinerary };
       const newDays = [...newItinerary.days];
+      if (dayIndex < 0 || dayIndex >= newDays.length) return state;
       const targetDay = { ...newDays[dayIndex] };
       const newActivities = [...targetDay.activities];
-      
+      if (activityIndex < 0 || activityIndex >= newActivities.length) return state;
+
       newActivities[activityIndex] = {
         ...newActivities[activityIndex],
         ...changes,
@@ -78,10 +71,9 @@ export const useItineraryStore = create<ItineraryStore>((set, _get) => ({
       newItinerary.days = newDays;
 
       // Add to history
-      const newHistory = [
-        ...state.history.slice(0, state.historyIndex + 1),
-        newItinerary,
-      ].slice(-MAX_HISTORY);
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), newItinerary].slice(
+        -MAX_HISTORY
+      );
 
       const newIndex = newHistory.length - 1;
 

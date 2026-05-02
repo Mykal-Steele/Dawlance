@@ -31,8 +31,7 @@ export const useFormStore = create<FormStore>()(
           startDate: data.startDate,
           endDate: data.endDate,
         }),
-      updatePreferences: (prefs: UserPreferences) =>
-        set({ preferences: prefs }),
+      updatePreferences: (prefs: UserPreferences) => set({ preferences: prefs }),
       reset: () => set(initialState),
     }),
     {
@@ -45,6 +44,19 @@ export const useFormStore = create<FormStore>()(
         travelers: state.travelers,
         preferences: state.preferences,
       }),
+      // Dates are serialized to ISO strings by JSON.stringify — reconvert on load
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          if (state.startDate) {
+            const parsed = new Date(state.startDate as unknown as string);
+            state.startDate = !isNaN(parsed.getTime()) ? parsed : null;
+          }
+          if (state.endDate) {
+            const parsed = new Date(state.endDate as unknown as string);
+            state.endDate = !isNaN(parsed.getTime()) ? parsed : null;
+          }
+        }
+      },
     }
   )
 );
