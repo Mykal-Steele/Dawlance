@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "developer": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".bob/skills/developer/SKILL.md",
+      "computedHash": "updated"
+    },
+    "planner": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".bob/skills/planner/SKILL.md",
+      "computedHash": "updated"
+    },
+    "qa": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".bob/skills/qa/SKILL.md",
+      "computedHash": "updated"
+    },
+    "support": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".bob/skills/support/SKILL.md",
+      "computedHash": "updated"
+    }
+  }
+}
