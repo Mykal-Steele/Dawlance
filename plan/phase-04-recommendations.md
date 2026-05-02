@@ -2,7 +2,7 @@
 
 ## Goal
 
-Implement recommendation generation (hybrid Google Places + Unsplash + OpenAI) and the full discovery interface. This is Phase 1 of the two-phase architecture — selection here feeds Phase 2 (itinerary generation). The two phases must remain strictly separate.
+Implement recommendation generation (hybrid Google Places + Unsplash + Gemini) and the full discovery interface. This is Phase 1 of the two-phase architecture — selection here feeds Phase 2 (itinerary generation). The two phases must remain strictly separate.
 
 ## References (read before starting)
 
@@ -16,8 +16,8 @@ Implement recommendation generation (hybrid Google Places + Unsplash + OpenAI) a
 - `00-overview.md § Error Handling > Partial Failure Handling` — `Promise.allSettled` strategy
 - `00-overview.md § Performance > Image Optimization` — Next.js `next/image` with blur placeholder
 - `00-overview.md § Performance > Pagination Strategy` — 12 cards/page, `keepPreviousData: true`
-- `00-overview.md § Performance > Caching Strategy` — Redis key format, 1-hour TTL (24-hour for popular destinations)
-- `00-overview.md § Cost Analysis > Cost Optimization` — request coalescing, tiered models (gpt-3.5-turbo for recommendations)
+- `00-overview.md § Performance > Caching Strategy` — React Query-only caching (no Redis in hackathon account)
+- `00-overview.md § Cost Analysis > Cost Optimization` — request coalescing, tiered models (gemini-3-flash-preview for recommendations)
 
 ## Tasks
 
@@ -26,12 +26,12 @@ Implement recommendation generation (hybrid Google Places + Unsplash + OpenAI) a
 - [ ] Create `app/api/recommendations/route.ts`
   - [ ] Integrate Google Places API for hotels and restaurants (verified data + photos)
   - [ ] Integrate Unsplash API for attraction images (search by place name + city)
-  - [ ] Integrate OpenAI API (gpt-3.5-turbo) for AI-generated recommendations using the prompt template from overview
+  - [ ] Integrate Gemini API (`gemini-3-flash-preview`) via `@google/genai` for AI-generated recommendations using the prompt template from overview
   - [ ] Implement `fetchRecommendationImage()` service (`lib/services/image-service.ts`): Google Places → Unsplash → gradient placeholder waterfall; generate `blurDataURL` server-side for each
   - [ ] Implement Zod schema validation for AI response structure
-  - [ ] Implement retry logic (`retryWithBackoff`), `aiRateLimiter`, and `openAICircuitBreaker`
-  - [ ] Implement Redis caching: key `recommendations:<destination>:<hashPreferences(prefs)>`, 1-hour TTL (24-hour for popular destinations)
-  - [ ] Parallelize Google Places + Unsplash + OpenAI via `Promise.all`; use `Promise.allSettled` for graceful partial failure with `partial: boolean` flag and warnings
+  - [ ] Implement retry logic (`retryWithBackoff`), `aiRateLimiter`, and `geminiCircuitBreaker`
+  - [ ] React Query caching: `staleTime: Infinity` for recommendations (invalidated only on destination/preferences change) — no Redis available in hackathon IBM Cloud account
+  - [ ] Parallelize Google Places + Unsplash + Gemini via `Promise.all`; use `Promise.allSettled` for graceful partial failure with `partial: boolean` flag and warnings
   - [ ] Implement request coalescing (Map-based deduplication of in-flight requests)
 
 ### Discovery UI
@@ -81,4 +81,4 @@ Implement recommendation generation (hybrid Google Places + Unsplash + OpenAI) a
 - Selection state persists when paginating
 - Pre-flight validation blocks "Generate Itinerary" with clear error messages
 - Partial API failures show warnings but don't break the page
-- Redis cache is populated on first request and served on subsequent
+- React Query cache is warm on subsequent requests within the same session

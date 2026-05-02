@@ -29,7 +29,12 @@ Establish project structure, design system, and core infrastructure. Everything 
 - [ ] Implement all four Zustand stores in `lib/stores/` (formStore, selectionStore, itineraryStore, aiStore)
 - [ ] Create basic layout components: Header, Footer, BottomNav (mobile), Sidebar (desktop), ProgressIndicator
 - [ ] Implement ErrorBoundary component using `ErrorState` interface and `errorMessages` config
-- [ ] Set up environment variables structure (`.env.local.example` with OpenAI, Google Places, Unsplash, Weather API keys)
+- [ ] Set up environment variables structure (`.env.local.example`):
+  - `GEMINI_API_KEY` — Gemini AI
+  - `GOOGLE_PLACES_API_KEY` — Google Places (hotels/restaurants)
+  - `UNSPLASH_ACCESS_KEY` — Unsplash images
+  - `WEATHER_API_KEY` — weather forecast
+  - `IBM_CLOUDANT_URL` + `IBM_CLOUDANT_API_KEY` — if using Cloudant persistence
 - [ ] Source or create AI assistant avatar asset (stock illustration)
 - [ ] Build reusable UI components using shadcn/ui primitives: Button, Card, Input, Select, DatePicker, Slider, Chip, Badge, Modal, Tabs, LoadingSpinner
 - [ ] Set up Vitest and React Testing Library

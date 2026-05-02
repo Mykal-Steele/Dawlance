@@ -2,6 +2,8 @@
 
 This file is the single reference document for all AI agents working on any phase. Read the relevant sections before implementing a phase. Implementation phases are in `plan/phase-XX-*.md`.
 
+> **IBM Bob Dev Day Hackathon context**: Built for the hackathon theme "Turn idea into impact faster". **IBM Bob IDE is the required development tool** — all work must be done through Bob IDE and Bob task session reports must be exported and committed to `bob_sessions/` in the repo root for judging. IBM Cloud services used: Code Engine (deployment), Cloudant (persistence). Gemini API is the AI provider. IBM watsonx products are available optionally.
+
 ---
 
 ## Table of Contents
@@ -392,7 +394,7 @@ lib/
 │   └── itinerary.schema.ts
 ├── api/
 │   ├── weather.ts
-│   ├── openai.ts
+│   ├── gemini.ts
 │   ├── maps.ts
 │   └── ai.ts
 ├── utils/
@@ -688,12 +690,12 @@ interface Recommendation {
 **Hybrid Image + Data Approach**:
 1. **Google Places API** (hotels/restaurants): Verified data + photos (~$0.017/photo)
 2. **Unsplash API** (attractions): Free tier, 50 req/hour, search by place name + city
-3. **OpenAI API**: Generates contextual recommendation names and descriptions
+3. **Gemini API**: Generates contextual recommendation names and descriptions
 4. **Image Fallback**: Google Places → Unsplash → category-specific gradient placeholder
 
 The `fetchRecommendationImage()` service function tries Google Places first (hotels/restaurants), then Unsplash (attractions or fallback), then a category-specific gradient placeholder. Each path generates a blur placeholder server-side.
 
-**Implementation**: Use Gemini API (`gemini-3-flash-preview`) via `@google/genai`. Parallelize API calls with `Promise.all`. Handle partial failures via `Promise.allSettled`. Cache in Redis (1 hour TTL, 24 hours for popular destinations). Implement retry + circuit breaker + rate limiting. Validate AI response with Zod schemas.
+**Implementation**: Use Gemini API (`gemini-3-flash-preview`) via `@google/genai`. Parallelize API calls with `Promise.all`. Handle partial failures via `Promise.allSettled`. Cache with React Query (`staleTime: Infinity` for recommendations). For popular destinations, consider Cloudant as a persistent response cache. Implement retry + circuit breaker + rate limiting. Validate AI response with Zod schemas.
 
 **AI Prompt**:
 
@@ -868,7 +870,7 @@ interface AIAction {
 }
 ```
 
-**Implementation**: Use Gemini Interactions API (`gemini-3-flash-preview`) via `client.interactions.create()`. Pass `previous_interaction_id` for server-managed conversation state (no need to send full history). Use `stream: true` for streaming; consume chunks via `chunk.event_type === 'content.delta'`. Return `interaction.id` as `interactionId` in the response. Rate limit: 5 requests/minute via `aiRateLimiter`. Circuit breaker pattern via `openAICircuitBreaker`.
+**Implementation**: Use Gemini Interactions API (`gemini-3-flash-preview`) via `client.interactions.create()`. Pass `previous_interaction_id` for server-managed conversation state (no need to send full history). Use `stream: true` for streaming; consume chunks via `chunk.event_type === 'content.delta'`. Return `interaction.id` as `interactionId` in the response. Rate limit: 5 requests/minute via `aiRateLimiter`. Circuit breaker pattern via `geminiCircuitBreaker`.
 
 See [AI Assistant Integration](#ai-assistant-integration) for the full prompt template.
 
@@ -1092,7 +1094,7 @@ const errorMessages = {
 
 ### Partial Failure Handling
 
-Recommendations fetch uses `Promise.allSettled` across three parallel calls (Google Places, Unsplash, OpenAI). Each can fail independently; successful results are merged and failures surface as warnings to the UI. The result includes a `partial: boolean` flag.
+Recommendations fetch uses `Promise.allSettled` across three parallel calls (Google Places, Unsplash, Gemini). Each can fail independently; successful results are merged and failures surface as warnings to the UI. The result includes a `partial: boolean` flag.
 
 ### Rate Limit Handling
 
@@ -1100,7 +1102,7 @@ A client-side `RateLimiter` class enforces a maximum of 5 AI API requests per mi
 
 ### Circuit Breaker Pattern
 
-A `CircuitBreaker` class opens after 3 consecutive failures, stays open for 1 minute, then enters half-open state for a single probe request. States: `closed` → `open` → `half-open` → `closed`. Export as `openAICircuitBreaker` singleton from `lib/utils/circuit-breaker.ts`.
+A `CircuitBreaker` class opens after 3 consecutive failures, stays open for 1 minute, then enters half-open state for a single probe request. States: `closed` → `open` → `half-open` → `closed`. Export as `geminiCircuitBreaker` singleton from `lib/utils/circuit-breaker.ts`.
 
 ---
 
@@ -1118,7 +1120,7 @@ A `CircuitBreaker` class opens after 3 consecutive failures, stays open for 1 mi
 
 `RecommendationCard` uses `next/image` with `placeholder='blur'`, `blurDataURL` from the `Recommendation` object, `loading='lazy'`, and responsive `sizes` for three breakpoints: `(max-width: 768px) 100vw`, `(max-width: 1200px) 50vw`, `33vw`.
 
-Image Processing Pipeline: Fetch from Google Places/Unsplash → generate blur placeholder (server-side) → convert to WebP → store in Vercel CDN → serve responsive sizes.
+Image Processing Pipeline: Fetch from Google Places/Unsplash → generate blur placeholder (server-side) → convert to WebP → serve responsive sizes via CDN.
 
 ### Pagination Strategy
 
@@ -1131,7 +1133,7 @@ Discovery page uses `useQuery` with a `page` state variable and `ITEMS_PER_PAGE 
 
 ### API Parallelization
 
-Recommendations generation parallelizes three calls via `Promise.all`: Google Places fetch, Unsplash image search, and OpenAI AI suggestions. Results are merged before returning.
+Recommendations generation parallelizes three calls via `Promise.all`: Google Places fetch, Unsplash image search, and Gemini AI suggestions. Results are merged before returning.
 
 ### State Optimization
 
@@ -1223,29 +1225,29 @@ On push/PR: install deps → unit tests → integration tests → E2E tests → 
 
 | Item | Cost |
 |------|------|
-| Recommendations generation (OpenAI) | $0.03 |
-| Itinerary generation (OpenAI) | $0.02 |
-| Recalculation avg 2x (OpenAI) | $0.02 |
-| AI chat avg 2 messages (OpenAI) | $0.02 |
+| Recommendations generation (Gemini Flash) | ~$0.01 |
+| Itinerary generation (Gemini Pro) | ~$0.02 |
+| Recalculation avg 2x (Gemini Pro) | ~$0.02 |
+| AI chat avg 2 messages (Gemini Flash) | ~$0.005 |
 | Google Places API (30 places) | $0.30 |
 | Unsplash API | Free (50 req/hr limit) |
 | Weather API | Free tier sufficient |
-| **Total per session** | ~$0.40 |
+| **Total per session** | ~$0.36 |
 
-**Target after optimization**: $0.10 per session.
+**IBM Cloud infrastructure** (hackathon account): $80 credits provided. Code Engine serverless billing (pay per vCPU-second + GB-second) + Cloudant Lite tier (free for low usage). Track spend carefully — account suspends at 100% usage.
 
-**Monthly infrastructure** (10K users): Vercel Pro $20, Upstash Redis $10, Database $15 ≈ $45/month.
+> **No Redis**: remove all Redis/Upstash references from implementation. Use React Query caching only.
 
 ### Cost Optimization Strategies
 
-1. **Aggressive Caching**: Popular destinations (Tokyo, Paris, New York, London) use 24-hour Redis TTL; all others use 1-hour TTL.
-2. **Request Coalescing**: A `Map<string, Promise>` keyed by `destination:hashedPreferences` ensures concurrent users get the same in-flight promise instead of duplicate API calls.
-3. **Tiered Models**: `gpt-3.5-turbo` for recommendations and chat (cost-effective); `gpt-4` for itinerary generation (quality-critical).
+1. **React Query Caching**: `staleTime: Infinity` for recommendations (never refetch unless destination changes); `staleTime: 30min` for weather.
+2. **Request Coalescing**: A `Map<string, Promise>` keyed by `destination:hashedPreferences` ensures concurrent requests share the same in-flight Gemini call.
+3. **Tiered Models**: `gemini-3-flash-preview` for recommendations and chat (cost-effective); `gemini-3.1-pro-preview` for itinerary generation (quality-critical).
 4. **Batch Google Places requests**: 30 places in 3 calls instead of 30. Use Unsplash search over individual photo requests. Implement local time-adjustment algorithms (no AI needed).
 
 ### Cost Monitoring
 
-The `trackAPICall(type, cost, userId)` utility (`lib/analytics/cost-tracking.ts`) fires an analytics event per API call, then checks the user's monthly cost total; if it exceeds $5, it fires a cost-threshold alert. Monthly reports include: total API costs by type, cost per user, high-cost users, cost trends, ROI by feature.
+The `trackAPICall(type, cost, userId)` utility (`lib/analytics/cost-tracking.ts`) fires an analytics event per API call, then checks the user's cumulative cost total; if it exceeds $5, it fires a cost-threshold alert. **Hackathon note**: Monitor IBM Cloud credit consumption at 25%/50%/80% usage alerts — account suspends at 100%. Reports: total API costs by type (Gemini, Google Places, Unsplash), cost per session, cost trends.
 
 ### Monetization Strategy
 

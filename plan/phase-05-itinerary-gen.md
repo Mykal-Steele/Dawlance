@@ -10,20 +10,20 @@ Implement Phase 2 of the two-phase architecture: take the user's selected recomm
 
 - `00-overview.md § User Flow > Step 6: Itinerary Generation` — loading state spec, AI status messages
 - `00-overview.md § User Flow > Step 7: Itinerary Display` — activity card spec, day tabs, timeline layout, AI panel placeholder
-- `00-overview.md § API Design > 3. Itinerary Generation API` — `ItineraryRequest`, `ItineraryResponse`, `Itinerary`, `DayPlan`, `Activity` types, GPT-4 prompt template
+- `00-overview.md § API Design > 3. Itinerary Generation API` — `ItineraryRequest`, `ItineraryResponse`, `Itinerary`, `DayPlan`, `Activity` types, Gemini Pro prompt template
 - `00-overview.md § Data Models > TypeScript Interfaces > Itinerary, DayPlan, Activity`
 - `00-overview.md § State Management > Layer 1 > ItineraryStore interface` — `history`, `historyIndex`, `canUndo`, `canRedo`, `editActivity()`
 - `00-overview.md § State Management > Layer 2 > React Query` — itinerary mutation updates ItineraryStore on success
 - `00-overview.md § Error Handling > API Retry Logic` — apply to `/api/itinerary`
 - `00-overview.md § Performance > State Optimization` — wrap `ActivityCard` in `React.memo`
-- `00-overview.md § Cost Analysis > Cost Optimization > Tiered Models` — use GPT-4 for itinerary generation
+- `00-overview.md § Cost Analysis > Cost Optimization > Tiered Models` — use `gemini-3.1-pro-preview` for itinerary generation
 
 ## Tasks
 
 ### Itinerary Generation API (`/api/itinerary`)
 
 - [ ] Create `app/api/itinerary/route.ts`
-  - [ ] Integrate OpenAI API using **GPT-4** (not gpt-3.5-turbo — itinerary is quality-critical)
+  - [ ] Integrate Gemini API (`gemini-3.1-pro-preview`) via `@google/genai` — use the high-quality Pro model for itinerary (quality-critical, not Flash)
   - [ ] Use the prompt template from overview (chronological, geographic optimization, meal times, cultural context, attire suggestions)
   - [ ] Implement Zod schema validation for AI response structure
   - [ ] Implement retry logic (`retryWithBackoff`)
@@ -57,7 +57,7 @@ Implement Phase 2 of the two-phase architecture: take the user's selected recomm
 
 ## Deliverables
 
-- `/api/itinerary` route using GPT-4
+- `/api/itinerary` route using Gemini Pro
 - Itinerary display interface (day tabs + activity cards)
 - ItineraryStore wired up
 - Loading state with AI animation

@@ -30,7 +30,7 @@ Ensure quality, performance, and reliability across the entire application. Achi
 
 ### Integration Tests (Vitest + MSW)
 
-- [ ] Set up MSW handlers to mock `https://api.openai.com/v1/chat/completions`
+- [ ] Set up MSW handlers to mock `https://generativelanguage.googleapis.com/` (Gemini API base URL)
 - [ ] `POST /api/recommendations`: returns HTTP 200 with array of `Recommendation` objects matching schema
 - [ ] `POST /api/itinerary`: returns HTTP 200 with `Itinerary` matching schema
 - [ ] `POST /api/itinerary/recalculate`: applies edit and returns updated itinerary
@@ -103,7 +103,7 @@ Ensure quality, performance, and reliability across the entire application. Achi
 ### Load Testing
 
 - [ ] Stress test API endpoints with 100+ concurrent users (use k6 or Artillery)
-- [ ] Verify Redis caching reduces OpenAI call rate under load
+- [ ] Verify React Query deduplication prevents duplicate Gemini API calls under concurrent requests
 - [ ] Monitor cost per session under load — confirm within $0.40 budget
 
 ### CI/CD Pipeline
@@ -128,4 +128,4 @@ Ensure quality, performance, and reliability across the entire application. Achi
 - Lighthouse scores ≥90 on all three URLs
 - Bundle size <500KB gzipped
 - No API keys found in client-side bundle
-- Load test shows Redis cache hit rate >80% under load
+- Load test shows request coalescing prevents duplicate in-flight Gemini calls

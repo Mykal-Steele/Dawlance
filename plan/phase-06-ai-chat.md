@@ -6,7 +6,7 @@ Add the AI assistant chat interface to the itinerary view. The AI should be cont
 
 ## References (read before starting)
 
-- `00-overview.md § AI Assistant Integration > AI Assistant Role` — cost-optimized strategy, gpt-3.5-turbo for chat
+- `00-overview.md § AI Assistant Integration > AI Assistant Role` — cost-optimized strategy, gemini-3-flash-preview for chat
 - `00-overview.md § AI Assistant Integration > AI Capabilities` — full capability list
 - `00-overview.md § AI Assistant Integration > AI Chat Interface` — component hierarchy, message types, quick actions
 - `00-overview.md § AI Assistant Integration > AI API Types` — `AIChatRequest`, `AIChatResponse`, `AIAction` interfaces
@@ -15,23 +15,24 @@ Add the AI assistant chat interface to the itinerary view. The AI should be cont
 - `00-overview.md § State Management > Layer 1 > AIStore interface` — messages, isTyping, addMessage, setTyping, clearHistory
 - `00-overview.md § State Management > Layer 2 > React Query` — AI chat mutation
 - `00-overview.md § Error Handling > Rate Limit Handling` — 5 requests/minute via `aiRateLimiter`
-- `00-overview.md § Error Handling > Circuit Breaker Pattern` — `openAICircuitBreaker` wraps the chat call
+- `00-overview.md § Error Handling > Circuit Breaker Pattern` — `geminiCircuitBreaker` wraps the chat call
 - `00-overview.md § Performance > Progressive Loading > Streaming Responses` — SSE with `ReadableStream`, `Content-Type: text/event-stream`
 - `00-overview.md § User Flow > Step 8: AI Assistant Interaction` — full UX spec
-- `00-overview.md § Cost Analysis > Cost Optimization > Tiered Models` — gpt-3.5-turbo for chat
+- `00-overview.md § Cost Analysis > Cost Optimization > Tiered Models` — `gemini-3-flash-preview` for chat
 
 ## Tasks
 
 ### AI Chat API (`/api/ai/chat`)
 
 - [ ] Create `app/api/ai/chat/route.ts`
-  - [ ] Integrate OpenAI API using **gpt-3.5-turbo** (fast responses, cost-effective)
-  - [ ] Implement **streaming responses** via `ReadableStream` with `Content-Type: text/event-stream` and `Cache-Control: no-cache`
-  - [ ] Build context-aware prompt (inject current step, destination, itinerary, selected recommendations, preferences from request)
-  - [ ] Use the full prompt template from overview (personality, context, instructions, response format)
-  - [ ] Maintain conversation history (passed in `conversationHistory` field)
+  - [ ] Use **Gemini Interactions API** via `@google/genai`: `client.interactions.create({ model: 'gemini-3-flash-preview', input: message, previous_interaction_id: previousInteractionId, stream: true })`
+  - [ ] **Server-side conversation history**: pass `previous_interaction_id` from request body — Gemini manages context server-side (no need to send full history). On first turn, omit `previous_interaction_id`.
+  - [ ] **Streaming**: set `stream: true`, forward `chunk.delta.text` for each `chunk.event_type === 'content.delta'` event via `ReadableStream`. Headers: `Content-Type: text/event-stream`, `Cache-Control: no-cache`
+  - [ ] Return `interaction.id` as `interactionId` in the response — client stores this in `AIStore.currentInteractionId` and sends back as `previousInteractionId` on next turn
+  - [ ] Build context-aware system instruction (inject current step, destination, itinerary, selections, preferences)
+  - [ ] Use the full prompt template from overview
   - [ ] Apply `aiRateLimiter` (5 requests/minute)
-  - [ ] Wrap in `openAICircuitBreaker` (3 failures → open for 1 minute)
+  - [ ] Wrap in `geminiCircuitBreaker` (3 failures → open for 1 minute)
 
 ### AI Assistant Components
 
@@ -46,7 +47,7 @@ Add the AI assistant chat interface to the itinerary view. The AI should be cont
 - [ ] Wire `AIAction` buttons: when an action has type `add_activity`, `remove_activity`, `adjust_time` — trigger the appropriate ItineraryStore update
 - [ ] Implement proactive AI message on itinerary load: "Looks like a great plan! I noticed you have a gap between [X] and [Y]. Want me to find a cozy cafe nearby?"
 - [ ] Implement Zustand `AIStore` integration (already defined in Phase 1, now wire to UI)
-- [ ] Wire React Query mutation for chat, update AIStore on success
+- [ ] Wire React Query mutation for chat: on success call `aiStore.addMessage(response)`, `aiStore.setInteractionId(response.interactionId)`, `aiStore.setTyping(false)`
 
 ## Deliverables
 

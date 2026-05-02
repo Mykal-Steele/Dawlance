@@ -21,10 +21,10 @@ Implement full itinerary editing with the tiered recalculation strategy. Users c
 - [ ] Create `app/api/itinerary/recalculate/route.ts`
   - [ ] Accept `RecalculateRequest` (currentItinerary + edit details)
   - [ ] Implement **tiered recalculation logic** on the server:
-    - `notes` / `description` changes → apply locally, return immediately (no OpenAI call)
-    - Time shifts ≤ ±30 minutes → apply local time-adjustment algorithm, no OpenAI call
-    - Structural changes (add/remove activity, major time changes) → call OpenAI with the recalculation prompt
-  - [ ] Apply 2-3 second debounce before sending structural changes to OpenAI
+    - `notes` / `description` changes → apply locally, return immediately (no Gemini API call)
+    - Time shifts ≤ ±30 minutes → apply local time-adjustment algorithm, no Gemini API call
+    - Structural changes (add/remove activity, major time changes) → call Gemini API (`gemini-3.1-pro-preview`) with the recalculation prompt
+  - [ ] Apply 2-3 second debounce before sending structural changes to Gemini
   - [ ] Return `RecalculateResponse` with `changedDays[]`
   - [ ] Implement retry logic
 
@@ -82,9 +82,9 @@ Implement full itinerary editing with the tiered recalculation strategy. Users c
 
 ## Testing Criteria
 
-- Notes-only edits do NOT call the OpenAI API
-- Time shift ≤ ±30 min does NOT call the OpenAI API
-- Adding/removing an activity DOES call the OpenAI API
+- Notes-only edits do NOT call the Gemini API
+- Time shift ≤ ±30 min does NOT call the Gemini API
+- Adding/removing an activity DOES call the Gemini API
 - Optimistic update shows immediately; UI rolls back on API error
 - Undo/redo correctly traverses history
 - Keyboard shortcuts work on both Mac and Windows

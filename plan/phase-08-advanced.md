@@ -68,7 +68,7 @@ Add export/share features, polish loading and empty states, finalize responsive 
   - [ ] Track user flow steps: destination → weather → preferences → discover → itinerary
   - [ ] Track edit events, AI chat usage
 - [ ] Wire up `trackAPICall(type, cost, userId)` in each API route
-  - [ ] Track OpenAI calls, Google Places calls, Unsplash calls
+  - [ ] Track Gemini calls, Google Places calls, Unsplash calls
   - [ ] Alert when a user exceeds $5/month threshold
 - [ ] Add error tracking (Sentry or similar)
 
