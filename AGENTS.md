@@ -3,9 +3,11 @@
 This file provides guidance to agents when working with code in this repository.
 
 ## Project Overview
+
 Smart travel planning web application using Next.js 14+ (App Router), React, TypeScript, and Tailwind CSS. Features an AI travel assistant that generates personalized, customizable travel itineraries through a streamlined flow.
 
 ## Core User Flow (CRITICAL)
+
 1. User inputs destination and travel dates
 2. System provides combined weather forecast and clothing recommendations (rule-based, not AI)
 3. User inputs visual preferences (travel style chips, budget selector, transportation icons, group dynamics, pace slider)
@@ -15,6 +17,7 @@ Smart travel planning web application using Next.js 14+ (App Router), React, Typ
 7. Plan is fully adjustable - edits trigger smart recalculation (local-only, partial, or full AI recalc based on edit type)
 
 ## Commands
+
 ```bash
 npm run dev          # Start development server
 npm run build        # Production build
@@ -24,6 +27,7 @@ npm run type-check   # TypeScript type checking
 ```
 
 ## Architecture Principles
+
 - Use Next.js App Router (app/ directory structure)
 - Server Components by default, Client Components only when needed (interactivity, hooks, browser APIs, AI chat)
 - API routes in app/api/ for backend logic
@@ -34,6 +38,7 @@ npm run type-check   # TypeScript type checking
 - Mobile-first, image-rich design with custom design system
 
 ## Code Style
+
 - TypeScript strict mode enabled
 - Functional components with TypeScript interfaces
 - Tailwind CSS with custom design system (colors: #2A7BFF, #6DD3B0, #FF8C42, #F8F9FA)
@@ -43,6 +48,7 @@ npm run type-check   # TypeScript type checking
 - Error boundaries for error handling
 
 ## Key Conventions
+
 - Components in components/ directory (including ai/, landing/, discovery/ subdirectories)
 - Types in lib/types/ (including ai.ts for AI assistant types)
 - API utilities in lib/api/
@@ -54,6 +60,7 @@ npm run type-check   # TypeScript type checking
 - **Image strategy**: Google Places (hotels/restaurants), Unsplash (attractions), gradient placeholders (fallback)
 
 ## Design System
+
 - Primary: #2A7BFF (Blue) - Main actions, AI branding
 - Secondary: #6DD3B0 (Mint Green) - Success, highlights
 - Tertiary: #FF8C42 (Orange) - Warnings, attention

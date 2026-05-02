@@ -43,6 +43,7 @@ description: Use this skill when writing code that calls the Gemini API for text
 ## Overview
 
 The Interactions API is a unified interface for interacting with Gemini models and agents. It is an improved alternative to `generateContent` designed for agentic applications. Key capabilities include:
+
 - **Server-side state:** Offload conversation history to the server via `previous_interaction_id`
 - **Background execution:** Run long-running tasks (like Deep Research) asynchronously
 - **Streaming:** Receive incremental responses via Server-Sent Events
@@ -55,6 +56,7 @@ The Interactions API is a unified interface for interacting with Gemini models a
 ### Interact with a Model
 
 #### Python
+
 ```python
 from google import genai
 
@@ -68,14 +70,15 @@ print(interaction.outputs[-1].text)
 ```
 
 #### JavaScript/TypeScript
+
 ```typescript
 import { GoogleGenAI } from "@google/genai";
 
 const client = new GoogleGenAI({});
 
 const interaction = await client.interactions.create({
-    model: "gemini-3-flash-preview",
-    input: "Tell me a short joke about programming.",
+  model: "gemini-3-flash-preview",
+  input: "Tell me a short joke about programming.",
 });
 console.log(interaction.outputs[interaction.outputs.length - 1].text);
 ```
@@ -83,6 +86,7 @@ console.log(interaction.outputs[interaction.outputs.length - 1].text);
 ### Stateful Conversation
 
 #### Python
+
 ```python
 from google import genai
 
@@ -104,6 +108,7 @@ print(interaction2.outputs[-1].text)
 ```
 
 #### JavaScript/TypeScript
+
 ```typescript
 import { GoogleGenAI } from "@google/genai";
 
@@ -111,15 +116,15 @@ const client = new GoogleGenAI({});
 
 // First turn
 const interaction1 = await client.interactions.create({
-    model: "gemini-3-flash-preview",
-    input: "Hi, my name is Phil.",
+  model: "gemini-3-flash-preview",
+  input: "Hi, my name is Phil.",
 });
 
 // Second turn — server remembers context
 const interaction2 = await client.interactions.create({
-    model: "gemini-3-flash-preview",
-    input: "What is my name?",
-    previous_interaction_id: interaction1.id,
+  model: "gemini-3-flash-preview",
+  input: "What is my name?",
+  previous_interaction_id: interaction1.id,
 });
 console.log(interaction2.outputs[interaction2.outputs.length - 1].text);
 ```
@@ -129,6 +134,7 @@ console.log(interaction2.outputs[interaction2.outputs.length - 1].text);
 Use `deep-research-preview-04-2026` for fast, interactive research or `deep-research-max-preview-04-2026` for maximum exhaustiveness.
 
 #### Python
+
 ```python
 import time
 from google import genai
@@ -155,6 +161,7 @@ while True:
 ```
 
 #### JavaScript/TypeScript
+
 ```typescript
 import { GoogleGenAI } from "@google/genai";
 
@@ -162,22 +169,22 @@ const client = new GoogleGenAI({});
 
 // Start background research
 const initialInteraction = await client.interactions.create({
-    agent: "deep-research-preview-04-2026",
-    input: "Research the history of Google TPUs.",
-    background: true,
+  agent: "deep-research-preview-04-2026",
+  input: "Research the history of Google TPUs.",
+  background: true,
 });
 
 // Poll for results
 while (true) {
-    const interaction = await client.interactions.get(initialInteraction.id);
-    if (interaction.status === "completed") {
-        console.log(interaction.outputs[interaction.outputs.length - 1].text);
-        break;
-    } else if (["failed", "cancelled"].includes(interaction.status)) {
-        console.log(`Failed: ${interaction.status}`);
-        break;
-    }
-    await new Promise(resolve => setTimeout(resolve, 10000));
+  const interaction = await client.interactions.get(initialInteraction.id);
+  if (interaction.status === "completed") {
+    console.log(interaction.outputs[interaction.outputs.length - 1].text);
+    break;
+  } else if (["failed", "cancelled"].includes(interaction.status)) {
+    console.log(`Failed: ${interaction.status}`);
+    break;
+  }
+  await new Promise((resolve) => setTimeout(resolve, 10000));
 }
 ```
 
@@ -194,6 +201,7 @@ Deep Research supports additional capabilities beyond basic research. See the [D
 ### Streaming
 
 #### Python
+
 ```python
 from google import genai
 
@@ -214,28 +222,28 @@ for chunk in stream:
 ```
 
 #### JavaScript/TypeScript
+
 ```typescript
 import { GoogleGenAI } from "@google/genai";
 
 const client = new GoogleGenAI({});
 
 const stream = await client.interactions.create({
-    model: "gemini-3-flash-preview",
-    input: "Explain quantum entanglement in simple terms.",
-    stream: true,
+  model: "gemini-3-flash-preview",
+  input: "Explain quantum entanglement in simple terms.",
+  stream: true,
 });
 
 for await (const chunk of stream) {
-    if (chunk.event_type === "content.delta") {
-        if (chunk.delta.type === "text" && "text" in chunk.delta) {
-            process.stdout.write(chunk.delta.text);
-        }
-    } else if (chunk.event_type === "interaction.complete") {
-        console.log(`\n\nTotal Tokens: ${chunk.interaction.usage.total_tokens}`);
+  if (chunk.event_type === "content.delta") {
+    if (chunk.delta.type === "text" && "text" in chunk.delta) {
+      process.stdout.write(chunk.delta.text);
     }
+  } else if (chunk.event_type === "interaction.complete") {
+    console.log(`\n\nTotal Tokens: ${chunk.interaction.usage.total_tokens}`);
+  }
 }
 ```
-
 
 ## Data Model
 
@@ -254,7 +262,6 @@ An `Interaction` response contains `outputs` — an array of typed content block
 
 **Status values:** `completed`, `in_progress`, `requires_action`, `failed`, `cancelled`
 
-
 ## Key Differences from generateContent
 
 - `startChat()` + manual history → `previous_interaction_id` (server-managed)
@@ -262,7 +269,6 @@ An `Interaction` response contains `outputs` — an array of typed content block
 - `response.text` → `interaction.outputs[-1].text`
 - No background execution → `background=True` for async tasks
 - No agent access → `agent="deep-research-preview-04-2026"` or `agent="deep-research-max-preview-04-2026"`
-
 
 ## Important Notes
 
@@ -272,7 +278,6 @@ An `Interaction` response contains `outputs` — an array of typed content block
 - **Agents require** `background=True`.
 - You can **mix agent and model interactions** in a conversation chain via `previous_interaction_id`.
 
-
 ## Documentation Lookup
 
 ### When MCP is Installed (Preferred)
@@ -281,7 +286,7 @@ If the **`search_docs`** tool (from the Google MCP server) is available, use it 
 
 1. Call `search_docs` with your query
 2. Read the returned documentation
-2. **Trust MCP results** as source of truth for API details — they are always up-to-date.
+3. **Trust MCP results** as source of truth for API details — they are always up-to-date.
 
 > [!IMPORTANT]
 > When MCP tools are present, **never** fetch URLs manually. MCP provides up-to-date, indexed documentation that is more accurate and token-efficient than URL fetching.

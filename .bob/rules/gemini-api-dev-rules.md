@@ -40,6 +40,7 @@ description: Use this skill when building applications with Gemini API hosted mo
 ## Quick Start
 
 ### Python
+
 ```python
 from google import genai
 
@@ -52,18 +53,20 @@ print(response.text)
 ```
 
 ### JavaScript/TypeScript
+
 ```typescript
 import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({});
 const response = await ai.models.generateContent({
   model: "gemini-3-flash-preview",
-  contents: "Explain quantum computing"
+  contents: "Explain quantum computing",
 });
 console.log(response.text);
 ```
 
 ### Go
+
 ```go
 package main
 
@@ -111,6 +114,7 @@ public class GenerateTextFromTextInput {
 ```
 
 **Java Installation:**
+
 - Latest version: https://central.sonatype.com/artifact/com.google.genai/google-genai/versions
 - Gradle: `implementation("com.google.genai:google-genai:${LAST_VERSION}")`
 - Maven:
@@ -132,7 +136,7 @@ If the **`search_docs`** tool (from the Google MCP server) is available, use it 
 
 1. Call `search_docs` with your query
 2. Read the returned documentation
-2. **Trust MCP results** as source of truth for API details — they are always up-to-date.
+3. **Trust MCP results** as source of truth for API details — they are always up-to-date.
 
 > [!IMPORTANT]
 > When MCP tools are present, **never** fetch URLs manually. MCP provides up-to-date, indexed documentation that is more accurate and token-efficient than URL fetching.
@@ -144,10 +148,12 @@ If no MCP documentation tools are available, fetch from the official docs:
 **Index URL**: `https://ai.google.dev/gemini-api/docs/llms.txt`
 
 This index contains links to all documentation pages in .md.txt format. Use web fetch tools to:
+
 1. Fetch `llms.txt` to discover available pages
 2. Fetch specific pages (e.g., `https://ai.google.dev/gemini-api/docs/function-calling.md.txt`)
 
 Key pages:
+
 - [Text generation](https://ai.google.dev/gemini-api/docs/text-generation.md.txt)
 - [Function calling](https://ai.google.dev/gemini-api/docs/function-calling.md.txt)
 - [Structured outputs](https://ai.google.dev/gemini-api/docs/structured-output.md.txt)

@@ -12,6 +12,7 @@ Refer to AGENTS.md for project architecture, user flow, and feature details.
 ## When to provide support
 
 Use this skill when:
+
 - User reports a bug or unexpected behavior
 - User asks how to use a feature
 - User needs clarification on the travel planning flow
@@ -23,6 +24,7 @@ Use this skill when:
 ### Step 1 -- Understand the issue
 
 Ask clarifying questions to understand:
+
 - What the user was trying to do
 - What they expected to happen
 - What actually happened
@@ -32,6 +34,7 @@ Ask clarifying questions to understand:
 ### Step 2 -- Identify the root cause
 
 Based on the user's description:
+
 - Is this a user misunderstanding of the feature?
 - Is this a bug in the application?
 - Is this a limitation of the current implementation?
@@ -40,6 +43,7 @@ Based on the user's description:
 ### Step 3 -- Provide guidance
 
 Offer clear, step-by-step guidance:
+
 - Explain the correct way to use the feature
 - Provide workarounds if applicable
 - Clarify expected behavior vs actual behavior
@@ -48,6 +52,7 @@ Offer clear, step-by-step guidance:
 ### Step 4 -- Escalate if needed
 
 If the issue is a bug or requires code changes:
+
 - Document the issue clearly
 - Suggest invoking the **planner** skill to address the bug
 - Provide reproduction steps

@@ -2,6 +2,7 @@
 description: This guide defines the definitive ESLint configuration and best practices for our team, ensuring consistent code quality, early error detection, and seamless integration with modern JavaScript and TypeScript workflows.
 globs: **/*.{js,jsx,ts,tsx,mts,cts}
 ---
+
 # eslint Best Practices
 
 ESLint is the bedrock of our JavaScript and TypeScript code quality. This guide outlines our definitive, opinionated approach to configuring and using ESLint, focusing on modern best practices for December 2025.
@@ -16,13 +17,13 @@ Start with the recommended and strict presets for robust error prevention and st
 
 ```javascript
 // eslint.config.js
-import eslint from '@eslint/js';
-import { defineConfig } from 'eslint/config';
+import eslint from "@eslint/js";
+import { defineConfig } from "eslint/config";
 
 export default defineConfig([
   eslint.configs.recommended, // Essential base rules
-  eslint.configs.strict,     // Stricter error-prevention rules
-  eslint.configs.stylistic,  // Stylistic rules (handled by Prettier, see 1.3)
+  eslint.configs.strict, // Stricter error-prevention rules
+  eslint.configs.stylistic, // Stylistic rules (handled by Prettier, see 1.3)
   // ... other configs and rules
 ]);
 ```
@@ -33,15 +34,15 @@ For TypeScript projects, enable type-aware linting. This provides powerful, deep
 
 ```javascript
 // eslint.config.ts (requires `jiti` or `ts-node` for execution)
-import eslint from '@eslint/js';
-import { defineConfig } from 'eslint/config';
-import tseslint from 'typescript-eslint';
+import eslint from "@eslint/js";
+import { defineConfig } from "eslint/config";
+import tseslint from "typescript-eslint";
 
 export default defineConfig([
   eslint.configs.recommended,
   tseslint.configs.recommendedTypeChecked, // TypeScript recommended rules with type-checking
-  tseslint.configs.strictTypeChecked,      // Stricter TypeScript rules with type-checking
-  tseslint.configs.stylisticTypeChecked,   // TypeScript stylistic rules (handled by Prettier)
+  tseslint.configs.strictTypeChecked, // Stricter TypeScript rules with type-checking
+  tseslint.configs.stylisticTypeChecked, // TypeScript stylistic rules (handled by Prettier)
   {
     languageOptions: {
       parser: tseslint.parser,
@@ -50,7 +51,7 @@ export default defineConfig([
         tsconfigRootDir: import.meta.dirname, // Point to your project root
       },
     },
-    files: ['**/*.ts', '**/*.tsx', '**/*.mts', '**/*.cts'], // Apply to TS files
+    files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"], // Apply to TS files
   },
   // ... other configs and rules
 ]);
@@ -64,9 +65,9 @@ ESLint handles code quality; Prettier handles code formatting. Use `eslint-confi
 
 ```javascript
 // eslint.config.js
-import eslint from '@eslint/js';
-import { defineConfig } from 'eslint/config';
-import prettierConfig from 'eslint-config-prettier'; // Make sure this is last!
+import eslint from "@eslint/js";
+import { defineConfig } from "eslint/config";
+import prettierConfig from "eslint-config-prettier"; // Make sure this is last!
 
 export default defineConfig([
   eslint.configs.recommended,
@@ -75,7 +76,7 @@ export default defineConfig([
   {
     rules: {
       // Custom rules or overrides go here
-      'no-console': 'warn', // Example: warn on console logs
+      "no-console": "warn", // Example: warn on console logs
     },
   },
 ]);
@@ -87,26 +88,26 @@ Apply rules precisely where they're needed using `files` and `ignores`.
 
 ```javascript
 // eslint.config.js
-import { defineConfig } from 'eslint/config';
+import { defineConfig } from "eslint/config";
 
 export default defineConfig([
   // ... base configs
   {
-    files: ['src/**/*.js', 'src/**/*.jsx'], // Apply to JS/JSX files in src
+    files: ["src/**/*.js", "src/**/*.jsx"], // Apply to JS/JSX files in src
     rules: {
-      'react/jsx-uses-react': 'off', // Example: React 17+ doesn't need this
-      'react/react-in-jsx-scope': 'off',
+      "react/jsx-uses-react": "off", // Example: React 17+ doesn't need this
+      "react/react-in-jsx-scope": "off",
     },
   },
   {
-    files: ['**/*.test.js', '**/*.spec.ts'], // Apply to test files
+    files: ["**/*.test.js", "**/*.spec.ts"], // Apply to test files
     rules: {
-      'no-unused-expressions': 'off', // Allow chai-style assertions
-      'jest/expect-expect': 'error',   // Ensure tests have assertions
+      "no-unused-expressions": "off", // Allow chai-style assertions
+      "jest/expect-expect": "error", // Ensure tests have assertions
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', 'coverage/'], // Globally ignore these directories
+    ignores: ["dist/", "node_modules/", "coverage/"], // Globally ignore these directories
   },
 ]);
 ```
@@ -120,14 +121,16 @@ Enforce these critical rules to maintain high code quality.
 Always use `const` unless a variable's value is reassigned.
 
 ❌ BAD
+
 ```javascript
-let name = 'Alice';
-name = 'Bob'; // Reassigned, but `let` was used initially
+let name = "Alice";
+name = "Bob"; // Reassigned, but `let` was used initially
 ```
 
 ✅ GOOD
+
 ```javascript
-const name = 'Alice'; // Never reassigned
+const name = "Alice"; // Never reassigned
 let age = 30;
 age++; // Reassigned, `let` is appropriate
 ```
@@ -137,12 +140,16 @@ age++; // Reassigned, `let` is appropriate
 Remove dead code. Unused variables, functions, or imports indicate cruft.
 
 ❌ BAD
+
 ```javascript
 const unusedVar = 10;
-function doSomething() { /* ... */ } // Never called
+function doSomething() {
+  /* ... */
+} // Never called
 ```
 
 ✅ GOOD
+
 ```javascript
 const usedVar = 10;
 console.log(usedVar);
@@ -153,6 +160,7 @@ console.log(usedVar);
 Ensure functions either always return a value or never return one explicitly. Avoid implicit `undefined` returns.
 
 ❌ BAD
+
 ```javascript
 function process(value) {
   if (value > 0) {
@@ -163,6 +171,7 @@ function process(value) {
 ```
 
 ✅ GOOD
+
 ```javascript
 function process(value) {
   if (value > 0) {
@@ -181,23 +190,25 @@ function logValue(value) {
 Simplify conditional logic by returning early.
 
 ❌ BAD
+
 ```javascript
 function getValue(condition) {
   if (condition) {
-    return 'A';
+    return "A";
   } else {
-    return 'B';
+    return "B";
   }
 }
 ```
 
 ✅ GOOD
+
 ```javascript
 function getValue(condition) {
   if (condition) {
-    return 'A';
+    return "A";
   }
-  return 'B'; // Simplified
+  return "B"; // Simplified
 }
 ```
 
@@ -206,14 +217,22 @@ function getValue(condition) {
 Always use `===` and `!==` to prevent type coercion issues.
 
 ❌ BAD
+
 ```javascript
-if (value == null) { /* ... */ } // Coercion
+if (value == null) {
+  /* ... */
+} // Coercion
 ```
 
 ✅ GOOD
+
 ```javascript
-if (value === null || value === undefined) { /* ... */ } // Explicit check
-if (value === 0) { /* ... */ } // No coercion
+if (value === null || value === undefined) {
+  /* ... */
+} // Explicit check
+if (value === 0) {
+  /* ... */
+} // No coercion
 ```
 
 ### 3.6. No Console Logs (`no-console`)
@@ -226,7 +245,7 @@ export default defineConfig([
   // ...
   {
     rules: {
-      'no-console': ['error', { allow: ['warn', 'error'] }], // Allow warn/error, but error on log
+      "no-console": ["error", { allow: ["warn", "error"] }], // Allow warn/error, but error on log
     },
   },
 ]);
@@ -237,6 +256,7 @@ export default defineConfig([
 Replace unexplained numeric literals with named constants for readability and maintainability.
 
 ❌ BAD
+
 ```javascript
 function calculateArea(radius) {
   return 3.14159 * radius * radius;
@@ -244,6 +264,7 @@ function calculateArea(radius) {
 ```
 
 ✅ GOOD
+
 ```javascript
 const PI = 3.14159;
 function calculateArea(radius) {
@@ -258,12 +279,14 @@ function calculateArea(radius) {
 **Never** use `eslint-disable` comments. They mask underlying issues, accumulate technical debt, and compromise code quality. If a rule is genuinely problematic for a specific, rare case, discuss it with the team to adjust the global configuration or create a targeted override.
 
 ❌ BAD
+
 ```javascript
 // eslint-disable-next-line no-console
-console.log('Debug info');
+console.log("Debug info");
 ```
 
 ✅ GOOD
+
 ```javascript
 // Remove or refactor the problematic code.
 // Or, if truly necessary, configure the rule globally to allow specific cases.
@@ -275,8 +298,8 @@ Ensure `eslint-config-prettier` is always the last configuration in your array t
 
 ```javascript
 // eslint.config.js
-import eslint from '@eslint/js';
-import prettierConfig from 'eslint-config-prettier';
+import eslint from "@eslint/js";
+import prettierConfig from "eslint-config-prettier";
 
 export default defineConfig([
   eslint.configs.recommended,
@@ -336,9 +359,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   lint:
@@ -347,8 +370,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
       - run: npm ci
       - run: npm run lint # Run the lint script defined in package.json
 ```

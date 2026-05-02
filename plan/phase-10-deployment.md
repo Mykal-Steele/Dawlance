@@ -19,6 +19,7 @@ Deploy to IBM Cloud Code Engine, set up monitoring, configure CI/CD, verify ever
 ## Hackathon Judging Requirement
 
 **IMPORTANT**: Before submitting, the repo MUST contain a `bob_sessions/` folder in the root with:
+
 - Screenshots of Bob IDE task session consumption summaries for all major tasks
 - Exported task history markdown files (exported from Bob IDE via "Export task history" icon)
 
@@ -29,6 +30,7 @@ This is required for judging. Missing `bob_sessions/` = disqualification from ju
 ### Containerize the App
 
 - [ ] Write `Dockerfile` for the Next.js app
+
   ```
   FROM node:20-alpine AS builder
   WORKDIR /app
@@ -45,6 +47,7 @@ This is required for judging. Missing `bob_sessions/` = disqualification from ju
   EXPOSE 3000
   CMD ["node", "server.js"]
   ```
+
 - [ ] Add `output: 'standalone'` to `next.config.js` (required for Docker)
 - [ ] Push image to IBM Container Registry:
   ```bash
@@ -60,6 +63,7 @@ This is required for judging. Missing `bob_sessions/` = disqualification from ju
 ### Deploy to IBM Code Engine
 
 - [ ] Create Code Engine project and deploy the app:
+
   ```bash
   ibmcloud ce project create --name travel-app-project
   ibmcloud ce project select --name travel-app-project
@@ -73,6 +77,7 @@ This is required for judging. Missing `bob_sessions/` = disqualification from ju
     --memory 1G \
     --port 3000
   ```
+
 - [ ] Set environment variables on the Code Engine application:
   ```bash
   ibmcloud ce application update --name travel-app \

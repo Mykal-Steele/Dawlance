@@ -2,6 +2,7 @@
 description: Definitive guidelines for writing robust, maintainable, and high-quality end-to-end tests with Playwright in TypeScript.
 globs: **/*.{js,ts}
 ---
+
 # Playwright Best Practices
 
 Playwright is the gold standard for reliable E2E testing. These rules ensure your tests are fast, stable, and easy to maintain, aligning with modern 2025 development standards for reliability, quality, and structure.
@@ -11,8 +12,9 @@ Playwright is the gold standard for reliable E2E testing. These rules ensure you
 Leverage the official test runner for built-in fixtures, isolation, and web-first assertions. Avoid the low-level `playwright` library for E2E tests.
 
 ❌ BAD: Using `playwright` directly
+
 ```typescript
-import { chromium } from 'playwright';
+import { chromium } from "playwright";
 // ... manual browser/context setup and teardown
 const browser = await chromium.launch();
 const page = await browser.newPage();
@@ -21,10 +23,11 @@ await browser.close();
 ```
 
 ✅ GOOD: Using `@playwright/test`
+
 ```typescript
-import { test, expect } from '@playwright/test';
-test('should navigate to home', async ({ page }) => {
-  await page.goto('/');
+import { test, expect } from "@playwright/test";
+test("should navigate to home", async ({ page }) => {
+  await page.goto("/");
   await expect(page).toHaveTitle(/Home/);
 });
 ```
@@ -34,15 +37,17 @@ test('should navigate to home', async ({ page }) => {
 Use Playwright's built-in Locators API, favoring user-facing attributes over brittle CSS selectors. This drastically improves test stability.
 
 ❌ BAD: Fragile, implementation-dependent selectors
+
 ```typescript
-await page.locator('div.container > ul > li:nth-child(2) > button').click();
+await page.locator("div.container > ul > li:nth-child(2) > button").click();
 ```
 
 ✅ GOOD: Semantic, user-facing locators
+
 ```typescript
-await page.getByRole('button', { name: 'Add to Cart' }).click();
-await page.getByLabel('Username').fill('testuser');
-await page.getByTestId('product-item-123').click();
+await page.getByRole("button", { name: "Add to Cart" }).click();
+await page.getByLabel("Username").fill("testuser");
+await page.getByTestId("product-item-123").click();
 ```
 
 ## 3. Embrace Web-First Assertions
@@ -50,17 +55,19 @@ await page.getByTestId('product-item-123').click();
 Playwright's `expect` assertions automatically retry until conditions are met, eliminating manual waits and flakiness. Never use `page.waitForTimeout()`.
 
 ❌ BAD: Manual, flaky waits and generic assertions
+
 ```typescript
 await page.waitForTimeout(2000); // 🚨 Flaky!
 const title = await page.title();
-assert.equal(title, 'My Page'); // 🚨 Not web-first
+assert.equal(title, "My Page"); // 🚨 Not web-first
 ```
 
 ✅ GOOD: Reliable, auto-retrying assertions
+
 ```typescript
 await expect(page).toHaveTitle(/My Page/);
-await expect(page.getByText('Welcome')).toBeVisible();
-await expect(page.getByRole('checkbox')).toBeChecked();
+await expect(page.getByText("Welcome")).toBeVisible();
+await expect(page.getByRole("checkbox")).toBeChecked();
 ```
 
 ## 4. Implement the Page Object Model (POM)
@@ -68,20 +75,22 @@ await expect(page.getByRole('checkbox')).toBeChecked();
 Encapsulate selectors and actions within dedicated classes. This improves readability, reusability, and maintainability.
 
 ❌ BAD: Repeated selectors and logic across tests
+
 ```typescript
 // test-login.spec.ts
-await page.getByLabel('Username').fill('user');
-await page.getByLabel('Password').fill('pass');
-await page.getByRole('button', { name: 'Login' }).click();
+await page.getByLabel("Username").fill("user");
+await page.getByLabel("Password").fill("pass");
+await page.getByRole("button", { name: "Login" }).click();
 
 // test-profile.spec.ts
 // ... same login steps repeated ...
 ```
 
 ✅ GOOD: Centralized Page Object
+
 ```typescript
 // pages/LoginPage.ts
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator } from "@playwright/test";
 
 export class LoginPage {
   readonly page: Page;
@@ -91,13 +100,13 @@ export class LoginPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.usernameInput = page.getByLabel('Username');
-    this.passwordInput = page.getByLabel('Password');
-    this.loginButton = page.getByRole('button', { name: 'Login' });
+    this.usernameInput = page.getByLabel("Username");
+    this.passwordInput = page.getByLabel("Password");
+    this.loginButton = page.getByRole("button", { name: "Login" });
   }
 
   async navigate() {
-    await this.page.goto('/login');
+    await this.page.goto("/login");
   }
 
   async login(username: string, password: string) {
@@ -108,13 +117,13 @@ export class LoginPage {
 }
 
 // tests/login.spec.ts
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../pages/LoginPage';
+import { test, expect } from "@playwright/test";
+import { LoginPage } from "../pages/LoginPage";
 
-test('should successfully log in', async ({ page }) => {
+test("should successfully log in", async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.navigate();
-  await loginPage.login('testuser', 'password');
+  await loginPage.login("testuser", "password");
   await expect(page).toHaveURL(/dashboard/);
 });
 ```
@@ -124,47 +133,49 @@ test('should successfully log in', async ({ page }) => {
 Reduce test execution time by reusing authenticated sessions and blocking unnecessary network requests.
 
 ❌ BAD: Logging in for every test and loading all assets
+
 ```typescript
-test('view profile', async ({ page }) => {
-  await page.goto('/login');
-  await page.getByLabel('Username').fill('user');
-  await page.getByLabel('Password').fill('pass');
-  await page.getByRole('button', { name: 'Login' }).click();
-  await page.goto('/profile'); // Loads all images, analytics, etc.
+test("view profile", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Username").fill("user");
+  await page.getByLabel("Password").fill("pass");
+  await page.getByRole("button", { name: "Login" }).click();
+  await page.goto("/profile"); // Loads all images, analytics, etc.
 });
 ```
 
 ✅ GOOD: Reusing auth state and blocking requests
+
 ```typescript
 // playwright.config.ts
-import { defineConfig } from '@playwright/test';
+import { defineConfig } from "@playwright/test";
 export default defineConfig({
   use: {
-    storageState: 'playwright-auth.json', // Path to save/load auth state
+    storageState: "playwright-auth.json", // Path to save/load auth state
   },
 });
 
 // global-setup.ts (run once before all tests)
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect } from "@playwright/test";
 export default async function globalSetup() {
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  await page.goto('/login');
-  await page.getByLabel('Username').fill('testuser');
-  await page.getByLabel('Password').fill('password');
-  await page.getByRole('button', { name: 'Login' }).click();
+  await page.goto("/login");
+  await page.getByLabel("Username").fill("testuser");
+  await page.getByLabel("Password").fill("password");
+  await page.getByRole("button", { name: "Login" }).click();
   await expect(page).toHaveURL(/dashboard/);
-  await page.context().storageState({ path: 'playwright-auth.json' });
+  await page.context().storageState({ path: "playwright-auth.json" });
   await browser.close();
 }
 
 // tests/profile.spec.ts
-import { test, expect } from '@playwright/test';
-test('should display user profile', async ({ page, context }) => {
+import { test, expect } from "@playwright/test";
+test("should display user profile", async ({ page, context }) => {
   // Block unnecessary resources for faster tests
-  await context.route('**/*.{png,jpg,jpeg,gif,webp,svg,css}', route => route.abort());
-  await page.goto('/profile'); // Automatically uses saved auth state
-  await expect(page.getByText('Welcome, testuser!')).toBeVisible();
+  await context.route("**/*.{png,jpg,jpeg,gif,webp,svg,css}", (route) => route.abort());
+  await page.goto("/profile"); // Automatically uses saved auth state
+  await expect(page.getByText("Welcome, testuser!")).toBeVisible();
 });
 ```
 
@@ -173,25 +184,27 @@ test('should display user profile', async ({ page, context }) => {
 Isolate your UI tests from backend flakiness by intercepting and mocking API responses.
 
 ❌ BAD: Relying on a live, potentially unstable backend
+
 ```typescript
-test('display products', async ({ page }) => {
-  await page.goto('/products'); // Fetches from real API
-  await expect(page.getByText('Product A')).toBeVisible();
+test("display products", async ({ page }) => {
+  await page.goto("/products"); // Fetches from real API
+  await expect(page.getByText("Product A")).toBeVisible();
 });
 ```
 
 ✅ GOOD: Mocking API responses
+
 ```typescript
-test('display mocked products', async ({ page }) => {
-  await page.route('**/api/products', route => {
+test("display mocked products", async ({ page }) => {
+  await page.route("**/api/products", (route) => {
     route.fulfill({
       status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify([{ id: 1, name: 'Mock Product' }]),
+      contentType: "application/json",
+      body: JSON.stringify([{ id: 1, name: "Mock Product" }]),
     });
   });
-  await page.goto('/products');
-  await expect(page.getByText('Mock Product')).toBeVisible();
+  await page.goto("/products");
+  await expect(page.getByText("Mock Product")).toBeVisible();
 });
 ```
 
@@ -201,13 +214,13 @@ Configure tracing, screenshots, and video recording in your `playwright.config.t
 
 ```typescript
 // playwright.config.ts
-import { defineConfig } from '@playwright/test';
+import { defineConfig } from "@playwright/test";
 export default defineConfig({
-  reporter: [['html'], ['list']],
+  reporter: [["html"], ["list"]],
   use: {
-    trace: 'on-first-retry', // Record trace only on first retry
-    screenshot: 'on',       // Always take a screenshot on failure
-    video: 'on-first-retry',// Record video on first retry
+    trace: "on-first-retry", // Record trace only on first retry
+    screenshot: "on", // Always take a screenshot on failure
+    video: "on-first-retry", // Record video on first retry
   },
 });
 ```
@@ -236,16 +249,17 @@ Integrate ESLint (with Playwright plugin) and Prettier into your workflow via pr
   }
 }
 ```
+
 ```javascript
 // .eslintrc.js
 module.exports = {
   root: true,
-  parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'playwright'],
+  parser: "@typescript-eslint/parser",
+  plugins: ["@typescript-eslint", "playwright"],
   extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:playwright/recommended',
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:playwright/recommended",
   ],
   rules: {
     // Add custom rules or override defaults here
@@ -256,6 +270,7 @@ module.exports = {
   },
 };
 ```
+
 ```json
 // .prettierrc
 {
@@ -264,6 +279,7 @@ module.exports = {
   "trailingComma": "all"
 }
 ```
+
 ```json
 // .husky/pre-commit
 #!/usr/bin/env sh
@@ -271,6 +287,7 @@ module.exports = {
 
 npx lint-staged
 ```
+
 ```json
 // .lintstagedrc.js
 module.exports = {

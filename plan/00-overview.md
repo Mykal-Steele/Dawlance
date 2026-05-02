@@ -432,6 +432,7 @@ lib/
 ### AI Assistant Role
 
 **Cost-Optimized AI Integration**: The AI assistant is used only for:
+
 - **Recommendation Generation**: Contextual recommendations based on preferences
 - **Itinerary Generation**: Chronological daily plan with optimal routing, cultural context, attire suggestions, travel times
 - **AI Chat Interface**: Travel questions, alternatives, nearby places, timing adjustments, cultural context, travel tips
@@ -445,6 +446,7 @@ Model strategy: `gemini-3-flash-preview` for chat and recommendations (fast + co
 Component hierarchy: `AIAssistant` wraps `AIAvatar`, `AIChat` (which contains `AIMessage` instances and `AITypingIndicator`), `AIQuickActions`, and `AIInput`.
 
 **Message Types**:
+
 - **Proactive Suggestions**: AI initiates conversation
 - **User Questions**: User asks AI
 - **Confirmations**: AI confirms actions
@@ -459,7 +461,7 @@ Component hierarchy: `AIAssistant` wraps `AIAvatar`, `AIChat` (which contains `A
 interface AIChatRequest {
   message: string;
   context: {
-    currentStep: 'destination' | 'weather' | 'preferences' | 'discovery' | 'itinerary';
+    currentStep: "destination" | "weather" | "preferences" | "discovery" | "itinerary";
     itinerary?: Itinerary;
     selectedRecommendations?: Recommendation[];
     preferences?: UserPreferences;
@@ -477,7 +479,7 @@ interface AIChatResponse {
 }
 
 interface AIAction {
-  type: 'add_activity' | 'remove_activity' | 'adjust_time' | 'suggest_alternative' | 'find_nearby';
+  type: "add_activity" | "remove_activity" | "adjust_time" | "suggest_alternative" | "find_nearby";
   payload: any;
   label: string;
 }
@@ -641,7 +643,7 @@ interface ClothingItem {
   name: string;
   description: string;
   icon: string;
-  category: 'clothing' | 'accessory';
+  category: "clothing" | "accessory";
   warning?: string;
 }
 ```
@@ -671,7 +673,7 @@ interface Recommendation {
   id: string;
   name: string;
   description: string;
-  category: 'attraction' | 'hotel' | 'restaurant';
+  category: "attraction" | "hotel" | "restaurant";
   estimatedDuration: number; // minutes
   priceRange: 1 | 2 | 3;
   location: {
@@ -681,13 +683,14 @@ interface Recommendation {
   openingHours: string;
   culturalNotes: string;
   imageUrl?: string;
-  imageSource?: 'places' | 'unsplash' | 'placeholder';
+  imageSource?: "places" | "unsplash" | "placeholder";
   blurDataURL?: string;
   tags: string[];
 }
 ```
 
 **Hybrid Image + Data Approach**:
+
 1. **Google Places API** (hotels/restaurants): Verified data + photos (~$0.017/photo)
 2. **Unsplash API** (attractions): Free tier, 50 req/hour, search by place name + city
 3. **Gemini API**: Generates contextual recommendation names and descriptions
@@ -755,7 +758,7 @@ interface Activity {
   id: string;
   time: string;
   duration: number;
-  type: 'attraction' | 'meal' | 'rest' | 'travel';
+  type: "attraction" | "meal" | "rest" | "travel";
   recommendation: Recommendation;
   culturalContext: string;
   attireSuggestion: string;
@@ -846,7 +849,7 @@ Return full updated itinerary as JSON.
 interface AIChatRequest {
   message: string;
   context: {
-    currentStep: 'destination' | 'weather' | 'preferences' | 'discovery' | 'itinerary';
+    currentStep: "destination" | "weather" | "preferences" | "discovery" | "itinerary";
     itinerary?: Itinerary;
     selectedRecommendations?: Recommendation[];
     preferences?: UserPreferences;
@@ -864,7 +867,7 @@ interface AIChatResponse {
 }
 
 interface AIAction {
-  type: 'add_activity' | 'remove_activity' | 'adjust_time' | 'suggest_alternative' | 'find_nearby';
+  type: "add_activity" | "remove_activity" | "adjust_time" | "suggest_alternative" | "find_nearby";
   payload: any;
   label: string;
 }
@@ -895,9 +898,9 @@ export interface DestinationData {
 // lib/types/preferences.ts
 export interface UserPreferences {
   travelStyle: string[]; // ['museums', 'nature', 'culinary', etc.]
-  budget: 'budget' | 'moderate' | 'luxury';
+  budget: "budget" | "moderate" | "luxury";
   transportation: string[]; // ['train', 'bus', 'walk']
-  groupDynamics: 'solo' | 'family' | 'pets';
+  groupDynamics: "solo" | "family" | "pets";
   pace: number; // 0-100 slider value
   mealTimes?: {
     breakfast?: string;
@@ -913,7 +916,7 @@ export interface Recommendation {
   id: string;
   name: string;
   description: string;
-  category: 'attraction' | 'hotel' | 'restaurant';
+  category: "attraction" | "hotel" | "restaurant";
   estimatedDuration: number; // minutes
   priceRange: 1 | 2 | 3;
   location: {
@@ -951,7 +954,7 @@ export interface Activity {
   id: string;
   time: string; // HH:MM format
   duration: number; // minutes
-  type: 'attraction' | 'meal' | 'rest' | 'travel';
+  type: "attraction" | "meal" | "rest" | "travel";
   recommendation: Recommendation;
   culturalContext: string;
   attireSuggestion: string;
@@ -970,7 +973,7 @@ export interface DailyForecast {
   date: string;
   tempHigh: number;
   tempLow: number;
-  condition: 'sunny' | 'cloudy' | 'rainy' | 'snowy' | 'windy';
+  condition: "sunny" | "cloudy" | "rainy" | "snowy" | "windy";
   precipitation: number; // percentage
   uvIndex: number;
   humidity: number;
@@ -980,14 +983,14 @@ export interface ClothingItem {
   name: string;
   description: string;
   icon: string;
-  category: 'clothing' | 'accessory';
+  category: "clothing" | "accessory";
   warning?: string;
 }
 
 // lib/types/ai.ts
 export interface AIMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   timestamp: string;
   suggestions?: string[];
@@ -995,7 +998,7 @@ export interface AIMessage {
 }
 
 export interface AIAction {
-  type: 'add_activity' | 'remove_activity' | 'adjust_time' | 'suggest_alternative' | 'find_nearby';
+  type: "add_activity" | "remove_activity" | "adjust_time" | "suggest_alternative" | "find_nearby";
   payload: any;
   label: string;
 }
@@ -1005,31 +1008,40 @@ export interface AIAction {
 
 ```typescript
 // lib/validations/destination.schema.ts
-import { z } from 'zod';
+import { z } from "zod";
 
 export const destinationSchema = z
   .object({
-    destination: z.string().min(2, 'Destination must be at least 2 characters'),
+    destination: z.string().min(2, "Destination must be at least 2 characters"),
     startDate: z.date(),
     endDate: z.date(),
   })
   .refine((data) => data.endDate > data.startDate, {
-    message: 'End date must be after start date',
-    path: ['endDate'],
+    message: "End date must be after start date",
+    path: ["endDate"],
   });
 
 // lib/validations/preferences.schema.ts
 export const preferencesSchema = z.object({
-  travelStyle: z.array(z.string()).min(1, 'Select at least one travel style'),
-  budget: z.enum(['budget', 'moderate', 'luxury']),
-  transportation: z.array(z.string()).min(1, 'Select at least one transportation method'),
-  groupDynamics: z.enum(['solo', 'family', 'pets']),
+  travelStyle: z.array(z.string()).min(1, "Select at least one travel style"),
+  budget: z.enum(["budget", "moderate", "luxury"]),
+  transportation: z.array(z.string()).min(1, "Select at least one transportation method"),
+  groupDynamics: z.enum(["solo", "family", "pets"]),
   pace: z.number().min(0).max(100),
   mealTimes: z
     .object({
-      breakfast: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
-      lunch: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
-      dinner: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).optional(),
+      breakfast: z
+        .string()
+        .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .optional(),
+      lunch: z
+        .string()
+        .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .optional(),
+      dinner: z
+        .string()
+        .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .optional(),
     })
     .optional(),
   dietaryRestrictions: z.array(z.string()).optional(),
@@ -1054,6 +1066,7 @@ The `retryWithBackoff(fn, maxRetries=3, baseDelay=1000)` utility retries an asyn
 ### Pre-Flight Validation
 
 Before calling `/api/itinerary`, validate:
+
 1. **Geographic feasibility**: Max 300km distance between any selected locations.
 2. **Time feasibility**: Total `estimatedDuration` sum must be ≤ 80% of available trip hours.
 3. **Category balance**: At least one hotel must be selected.
@@ -1068,26 +1081,26 @@ The `useAutoSave()` hook saves form state and selections to `localStorage` key `
 
 ```typescript
 interface ErrorState {
-  type: 'network' | 'api' | 'validation' | 'unknown';
+  type: "network" | "api" | "validation" | "unknown";
   message: string;
   recoveryOptions: RecoveryOption[];
 }
 
 const errorMessages = {
   network: {
-    title: 'Connection Lost',
-    message: 'Please check your internet connection and try again.',
-    actions: ['Retry', 'Save Draft', 'Go Offline'],
+    title: "Connection Lost",
+    message: "Please check your internet connection and try again.",
+    actions: ["Retry", "Save Draft", "Go Offline"],
   },
   api: {
-    title: 'Service Temporarily Unavailable',
-    message: 'Our AI service is experiencing high demand. Your selections are saved.',
-    actions: ['Retry', 'Try Later', 'Use Basic Mode'],
+    title: "Service Temporarily Unavailable",
+    message: "Our AI service is experiencing high demand. Your selections are saved.",
+    actions: ["Retry", "Try Later", "Use Basic Mode"],
   },
   validation: {
-    title: 'Invalid Selection',
-    message: 'Some of your selections need adjustment.',
-    actions: ['Review Selections', 'Get Suggestions'],
+    title: "Invalid Selection",
+    message: "Some of your selections need adjustment.",
+    actions: ["Review Selections", "Get Suggestions"],
   },
 };
 ```
@@ -1223,16 +1236,16 @@ On push/PR: install deps → unit tests → integration tests → E2E tests → 
 
 ### Cost Breakdown (Per User Session)
 
-| Item | Cost |
-|------|------|
-| Recommendations generation (Gemini Flash) | ~$0.01 |
-| Itinerary generation (Gemini Pro) | ~$0.02 |
-| Recalculation avg 2x (Gemini Pro) | ~$0.02 |
-| AI chat avg 2 messages (Gemini Flash) | ~$0.005 |
-| Google Places API (30 places) | $0.30 |
-| Unsplash API | Free (50 req/hr limit) |
-| Weather API | Free tier sufficient |
-| **Total per session** | ~$0.36 |
+| Item                                      | Cost                   |
+| ----------------------------------------- | ---------------------- |
+| Recommendations generation (Gemini Flash) | ~$0.01                 |
+| Itinerary generation (Gemini Pro)         | ~$0.02                 |
+| Recalculation avg 2x (Gemini Pro)         | ~$0.02                 |
+| AI chat avg 2 messages (Gemini Flash)     | ~$0.005                |
+| Google Places API (30 places)             | $0.30                  |
+| Unsplash API                              | Free (50 req/hr limit) |
+| Weather API                               | Free tier sufficient   |
+| **Total per session**                     | ~$0.36                 |
 
 **IBM Cloud infrastructure** (hackathon account): $80 credits provided. Code Engine serverless billing (pay per vCPU-second + GB-second) + Cloudant Lite tier (free for low usage). Track spend carefully — account suspends at 100% usage.
 
@@ -1252,6 +1265,7 @@ The `trackAPICall(type, cost, userId)` utility (`lib/analytics/cost-tracking.ts`
 ### Monetization Strategy
 
 **Freemium**:
+
 - Free: 1 itinerary/month, 3 AI chat messages/session, basic recommendations
 - Premium ($9.99/month): Unlimited itineraries, unlimited chat, advanced features (undo/redo, export, sharing), priority support
 

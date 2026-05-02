@@ -1,9 +1,11 @@
 # Plan Mode Rules
 
 ## Planning Focus
+
 When planning features for this travel application, always consider the two-phase architecture and user flow constraints.
 
 ## Critical Architecture Constraints
+
 - **Two-Phase Separation**: Recommendation generation MUST be separate from itinerary creation
   - Never combine these into a single step
   - User selection is a required intermediate step
@@ -15,6 +17,7 @@ When planning features for this travel application, always consider the two-phas
   - Display and static content should be Server Components
 
 ## User Flow Planning
+
 1. Landing page with AI introduction
 2. Destination and dates input (simple form)
 3. Weather forecast + clothing recommendations (combined view)
@@ -24,12 +27,14 @@ When planning features for this travel application, always consider the two-phas
 7. Itinerary display with AI assistant and edit capability
 
 ## State Management Strategy
+
 - Multi-step form data: React Context (destination, dates, preferences)
 - Complex itinerary state: Zustand (for undo/redo and edit tracking)
 - AI chat history: Zustand
 - Server data caching: React Query (weather, recommendations, itinerary)
 
 ## API Design Considerations
+
 - Separate endpoints for each phase:
   - `/api/weather` - Weather forecast + clothing recommendations
   - `/api/recommendations` - Generate selection list
@@ -39,18 +44,21 @@ When planning features for this travel application, always consider the two-phas
 - Error handling and retry logic at API level
 
 ## Design System Considerations
+
 - Colors: #2A7BFF (Primary), #6DD3B0 (Secondary), #FF8C42 (Tertiary)
 - Typography: Plus Jakarta Sans (headlines), Be Vietnam Pro (body)
 - Mobile-first, image-rich, card-based layouts
 - Icon-based form selectors (not text-heavy)
 
 ## Critical Terminology
+
 - Discovery phase: "Select for your trip" NOT "Saved Places" or "Favorites"
 - Users actively choose places for THIS trip, not saving for later
 - Use: "Select for your trip", "Add to plan", "Choose places"
 - NEVER: "Save", "Favorite", "Wishlist"
 
 ## Feature Planning Priorities
+
 1. Core user flow (landing → destination → weather → preferences → discovery → itinerary)
 2. AI assistant integration throughout the flow
 3. Visual preference selectors (chips, icons, sliders)

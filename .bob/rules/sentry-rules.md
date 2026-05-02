@@ -2,6 +2,7 @@
 description: Definitive guidelines for integrating and using Sentry for error tracking and performance monitoring, ensuring optimal setup, performance, and debuggability across all applications.
 globs: **/*
 ---
+
 # Sentry Best Practices
 
 Sentry is our definitive platform for error tracking and performance monitoring. Proper integration ensures we debug faster, ship more reliably, and maintain high application health. This guide outlines the mandatory best practices for all projects.
@@ -15,6 +16,7 @@ Always initialize the Sentry SDK early in your application's bootstrap process. 
 Initialize Sentry once, as close to your application's entry point as possible. Use environment variables for sensitive data like DSN and for configuration that varies by environment.
 
 ❌ **BAD: Late or Scattered Initialization**
+
 ```python
 # app/views.py (Django) or a random module
 import sentry_sdk
@@ -26,6 +28,7 @@ def my_function():
 ```
 
 ✅ **GOOD: Application Bootstrap (Python Example)**
+
 ```python
 # app.py or wsgi.py/asgi.py for web apps
 import os
@@ -50,6 +53,7 @@ if SENTRY_DSN:
 ```
 
 ✅ **GOOD: Application Bootstrap (JavaScript/TypeScript Example)**
+
 ```typescript
 // src/index.ts or app.ts
 import * as Sentry from "@sentry/node"; // or @sentry/browser, @sentry/react, etc.
@@ -60,17 +64,17 @@ const SENTRY_RELEASE = process.env.SENTRY_RELEASE || "unknown";
 const SENTRY_TRACES_SAMPLE_RATE = parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE || "0.0");
 
 if (SENTRY_DSN) {
-    Sentry.init({
-        dsn: SENTRY_DSN,
-        environment: SENTRY_ENVIRONMENT,
-        release: SENTRY_RELEASE,
-        integrations: [
-            // Add framework-specific integrations here, e.g., new Sentry.Integrations.Http({ tracing: true })
-            // new Sentry.Integrations.Express(),
-        ],
-        tracesSampleRate: SENTRY_TRACES_SAMPLE_RATE,
-        enableTracing: true, // Redundant with tracesSampleRate > 0, but good for clarity
-    });
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    environment: SENTRY_ENVIRONMENT,
+    release: SENTRY_RELEASE,
+    integrations: [
+      // Add framework-specific integrations here, e.g., new Sentry.Integrations.Http({ tracing: true })
+      // new Sentry.Integrations.Express(),
+    ],
+    tracesSampleRate: SENTRY_TRACES_SAMPLE_RATE,
+    enableTracing: true, // Redundant with tracesSampleRate > 0, but good for clarity
+  });
 }
 ```
 
@@ -79,6 +83,7 @@ if (SENTRY_DSN) {
 Always set `environment` and `release` during initialization. Enrich events with user and other relevant context for faster debugging.
 
 ✅ **GOOD: Setting Context**
+
 ```python
 import sentry_sdk
 
@@ -103,6 +108,7 @@ def process_order(user_id: str, order_details: dict):
 Leverage OpenTelemetry for distributed tracing. Sentry SDKs integrate seamlessly, allowing end-to-end visibility without rewriting existing instrumentation.
 
 ✅ **GOOD: OpenTelemetry Integration (Python Example)**
+
 ```python
 import sentry_sdk
 from opentelemetry import trace
@@ -138,40 +144,43 @@ def my_traced_function():
 **NEVER** use `Sentry.init()` in shared environments (e.g., browser extensions, VS Code extensions, third-party widgets). This pollutes global state and leads to data leakage. Create a dedicated client instance manually.
 
 ❌ **BAD: Global Init in Shared Environment**
+
 ```typescript
 // browser_extension/background.ts
 import * as Sentry from "@sentry/browser";
 
-Sentry.init({ // ❌ DANGER: Do NOT use Sentry.init() in shared environments!
-    dsn: "YOUR_DSN",
-    // ...
+Sentry.init({
+  // ❌ DANGER: Do NOT use Sentry.init() in shared environments!
+  dsn: "YOUR_DSN",
+  // ...
 });
 ```
 
 ✅ **GOOD: Manual Client Setup for Shared Environments**
+
 ```typescript
 // browser_extension/background.ts
 import {
-    BrowserClient,
-    defaultStackParser,
-    getDefaultIntegrations,
-    makeFetchTransport,
-    Scope,
+  BrowserClient,
+  defaultStackParser,
+  getDefaultIntegrations,
+  makeFetchTransport,
+  Scope,
 } from "@sentry/browser";
 
 // Filter out integrations that rely on global state
 const integrations = getDefaultIntegrations({}).filter(
-    (defaultIntegration) =>
-        !["BrowserApiErrors", "Breadcrumbs", "GlobalHandlers"].includes(defaultIntegration.name)
+  (defaultIntegration) =>
+    !["BrowserApiErrors", "Breadcrumbs", "GlobalHandlers"].includes(defaultIntegration.name)
 );
 
 const client = new BrowserClient({
-    dsn: "YOUR_DSN",
-    transport: makeFetchTransport,
-    stackParser: defaultStackParser,
-    integrations: integrations,
-    tracesSampleRate: 1.0, // Adjust for production
-    enableTracing: true,
+  dsn: "YOUR_DSN",
+  transport: makeFetchTransport,
+  stackParser: defaultStackParser,
+  integrations: integrations,
+  tracesSampleRate: 1.0, // Adjust for production
+  enableTracing: true,
 });
 
 const scope = new Scope();
@@ -180,10 +189,10 @@ client.init(); // Initialize the client after setting it on the scope
 
 // Manually capture exceptions using the client's scope
 try {
-    // Your extension code here
-    throw new Error("Example error in extension");
+  // Your extension code here
+  throw new Error("Example error in extension");
 } catch (error) {
-    scope.captureException(error);
+  scope.captureException(error);
 }
 ```
 
@@ -192,6 +201,7 @@ try {
 For serverless functions, use the platform-specific integration.
 
 ✅ **GOOD: AWS Lambda (Python Example)**
+
 ```python
 import os
 import sentry_sdk
@@ -222,10 +232,11 @@ def lambda_handler(event, context):
 
 `traces_sample_rate` directly impacts performance overhead and Sentry quota usage.
 
-*   **Development:** Set to `1.0` to capture all transactions for full visibility.
-*   **Production:** Set to a lower value (e.g., `0.01` to `0.1`) to sample a representative subset of transactions. Adjust based on traffic volume and monitoring needs.
+- **Development:** Set to `1.0` to capture all transactions for full visibility.
+- **Production:** Set to a lower value (e.g., `0.01` to `0.1`) to sample a representative subset of transactions. Adjust based on traffic volume and monitoring needs.
 
 ❌ **BAD: `traces_sample_rate=1.0` in Production**
+
 ```python
 sentry_sdk.init(
     dsn="YOUR_PROD_DSN",
@@ -235,6 +246,7 @@ sentry_sdk.init(
 ```
 
 ✅ **GOOD: Controlled Sampling in Production**
+
 ```python
 sentry_sdk.init(
     dsn="YOUR_PROD_DSN",
@@ -250,6 +262,7 @@ sentry_sdk.init(
 Without a valid DSN, Sentry cannot send events. Always verify your DSN is correctly configured, ideally via environment variables.
 
 ❌ **BAD: Hardcoded or Missing DSN**
+
 ```python
 sentry_sdk.init(
     dsn="", # ❌ No DSN means no events
@@ -258,6 +271,7 @@ sentry_sdk.init(
 ```
 
 ✅ **GOOD: DSN from Environment Variables**
+
 ```python
 import os
 sentry_sdk.init(
@@ -271,6 +285,7 @@ sentry_sdk.init(
 Events without `environment` or `release` are significantly harder to triage and correlate. Always set these values.
 
 ❌ **BAD: Omitting Environment/Release**
+
 ```python
 sentry_sdk.init(
     dsn="YOUR_DSN",
@@ -279,6 +294,7 @@ sentry_sdk.init(
 ```
 
 ✅ **GOOD: Explicit Environment/Release**
+
 ```python
 sentry_sdk.init(
     dsn="YOUR_DSN",
@@ -298,6 +314,7 @@ If Sentry events aren't appearing, check your Sentry project's **Project Setting
 Prevent test noise and unnecessary Sentry events by disabling the SDK during automated tests.
 
 ✅ **GOOD: Conditional Sentry Initialization**
+
 ```python
 import os
 import sentry_sdk
@@ -318,6 +335,7 @@ if os.getenv("SENTRY_DSN") and os.getenv("APP_ENV") != "test":
 For specific, non-critical errors that you want to report without crashing the application, use `sentry_sdk.capture_message()` or `sentry_sdk.capture_exception()`.
 
 ✅ **GOOD: Manual Capture**
+
 ```python
 import sentry_sdk
 

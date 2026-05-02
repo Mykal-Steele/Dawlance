@@ -24,6 +24,7 @@ Check all new or modified imports for proper module resolution, no circular impo
 ### 3. Architectural boundary check
 
 For each changed file, verify:
+
 - Server Components don't use client-side hooks or browser APIs
 - Client Components are marked with 'use client' directive
 - API routes are in app/api/ directory

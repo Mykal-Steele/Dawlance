@@ -2,6 +2,7 @@
 description: This guide provides definitive best practices for integrating and managing the Google Maps JavaScript API in modern web applications, focusing on security, performance, and maintainability.
 globs: **/*.{js,jsx}
 ---
+
 # google-maps-js Best Practices
 
 This document outlines the definitive guidelines for working with the Google Maps JavaScript API. Adhering to these practices ensures secure, performant, and maintainable map-centric applications.
@@ -16,8 +17,8 @@ Abstract map initialization and interactions into custom hooks.
 
 ```jsx
 // hooks/useGoogleMap.js
-import { useEffect, useRef, useState } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
+import { useEffect, useRef, useState } from "react";
+import { Loader } from "@googlemaps/js-api-loader";
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY; // Securely load API key
 
@@ -31,7 +32,7 @@ export function useGoogleMap(mapContainerRef, options) {
     if (!loaderRef.current) {
       loaderRef.current = new Loader({
         apiKey: API_KEY,
-        version: 'weekly', // Use 'weekly' for latest features, 'quarterly' for stability
+        version: "weekly", // Use 'weekly' for latest features, 'quarterly' for stability
         // Do NOT specify 'libraries' here unless absolutely necessary for caching.
         // Prefer dynamic importLibrary() calls.
       });
@@ -39,16 +40,16 @@ export function useGoogleMap(mapContainerRef, options) {
 
     const initMap = async () => {
       try {
-        const { Map } = await loaderRef.current.importLibrary('maps');
+        const { Map } = await loaderRef.current.importLibrary("maps");
         const newMap = new Map(mapContainerRef.current, {
           center: { lat: -34.397, lng: 150.644 },
           zoom: 8,
-          mapId: 'YOUR_MAP_ID', // Always use a Map ID
+          mapId: "YOUR_MAP_ID", // Always use a Map ID
           ...options,
         });
         setMap(newMap);
       } catch (error) {
-        console.error('Error loading Google Maps:', error);
+        console.error("Error loading Google Maps:", error);
         // Implement user-facing error message, e.g., show a fallback UI
       }
     };
@@ -66,8 +67,8 @@ export function useGoogleMap(mapContainerRef, options) {
 }
 
 // components/MyMapComponent.jsx
-import React, { useRef, useEffect } from 'react';
-import { useGoogleMap } from '../hooks/useGoogleMap';
+import React, { useRef, useEffect } from "react";
+import { useGoogleMap } from "../hooks/useGoogleMap";
 
 export function MyMapComponent() {
   const mapRef = useRef(null);
@@ -76,17 +77,17 @@ export function MyMapComponent() {
   useEffect(() => {
     if (map) {
       // Map is loaded, add markers, listeners, etc.
-      console.log('Map loaded:', map);
+      console.log("Map loaded:", map);
       const marker = new google.maps.marker.AdvancedMarkerElement({
         map,
         position: map.getCenter(),
-        title: 'Hello World',
+        title: "Hello World",
       });
       // Remember to clean up markers/overlays if they are not managed by the map itself
     }
   }, [map]);
 
-  return <div ref={mapRef} style={{ height: '500px', width: '100%' }} />;
+  return <div ref={mapRef} style={{ height: "500px", width: "100%" }} />;
 }
 ```
 
@@ -134,25 +135,27 @@ Always use modern, performant methods for loading the Maps JavaScript API.
 This allows lazy loading of specific libraries as needed, reducing initial bundle size and improving page load performance.
 
 ```javascript
-import { Loader } from '@googlemaps/js-api-loader';
+import { Loader } from "@googlemaps/js-api-loader";
 
 const loader = new Loader({
   apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
-  version: 'weekly',
+  version: "weekly",
 });
 
 async function initializeMapAndPlaces() {
   try {
-    const { Map } = await loader.importLibrary('maps');
-    const { AdvancedMarkerElement } = await loader.importLibrary('marker');
-    const { AutocompleteService } = await loader.importLibrary('places');
+    const { Map } = await loader.importLibrary("maps");
+    const { AdvancedMarkerElement } = await loader.importLibrary("marker");
+    const { AutocompleteService } = await loader.importLibrary("places");
 
-    const map = new Map(document.getElementById('map'), { /* ... */ });
-    const marker = new AdvancedMarkerElement({ map, /* ... */ });
+    const map = new Map(document.getElementById("map"), {
+      /* ... */
+    });
+    const marker = new AdvancedMarkerElement({ map /* ... */ });
     const autocompleteService = new AutocompleteService();
     // ... use services
   } catch (error) {
-    console.error('Failed to load Google Maps libraries:', error);
+    console.error("Failed to load Google Maps libraries:", error);
   }
 }
 
@@ -169,8 +172,8 @@ Manage event listeners carefully to prevent memory leaks and ensure proper clean
 // In a React component, without cleanup
 useEffect(() => {
   if (map) {
-    map.addListener('click', (e) => {
-      console.log('Map clicked at:', e.latLng.toString());
+    map.addListener("click", (e) => {
+      console.log("Map clicked at:", e.latLng.toString());
     });
     // This listener will persist even if the component unmounts
   }
@@ -184,12 +187,12 @@ Use `google.maps.event.addListener` and store the listener handle for later remo
 ```javascript
 useEffect(() => {
   if (map) {
-    const clickListener = map.addListener('click', (e) => {
-      console.log('Map clicked at:', e.latLng.toString());
+    const clickListener = map.addListener("click", (e) => {
+      console.log("Map clicked at:", e.latLng.toString());
     });
 
-    const dragEndListener = map.addListener('dragend', () => {
-      console.log('Map dragged to:', map.getCenter().toString());
+    const dragEndListener = map.addListener("dragend", () => {
+      console.log("Map dragged to:", map.getCenter().toString());
     });
 
     // Cleanup function: remove listeners when component unmounts or dependencies change
@@ -214,11 +217,11 @@ For applications with many markers, implement clustering or only render visible 
 Use a helper library like `@googlemaps/markerclusterer` for efficient marker management.
 
 ```javascript
-import { MarkerClusterer } from '@googlemaps/markerclusterer';
+import { MarkerClusterer } from "@googlemaps/markerclusterer";
 
 async function addClusteredMarkers(map, locations) {
-  const { AdvancedMarkerElement } = await loader.importLibrary('marker');
-  const markers = locations.map(loc => new AdvancedMarkerElement({ position: loc }));
+  const { AdvancedMarkerElement } = await loader.importLibrary("marker");
+  const markers = locations.map((loc) => new AdvancedMarkerElement({ position: loc }));
 
   new MarkerClusterer({ map, markers });
 }
@@ -231,7 +234,7 @@ Avoid excessive re-renders or API calls on continuous events like `mousemove` or
 ### ✅ GOOD: Debouncing `idle` Event
 
 ```javascript
-import { debounce } from 'lodash'; // Or implement your own debounce utility
+import { debounce } from "lodash"; // Or implement your own debounce utility
 
 useEffect(() => {
   if (map) {
@@ -242,7 +245,7 @@ useEffect(() => {
       // Trigger API calls or state updates here (e.g., fetch new data for current viewport)
     }, 500); // Wait 500ms after map stops moving
 
-    const idleListener = map.addListener('idle', handleMapIdle);
+    const idleListener = map.addListener("idle", handleMapIdle);
 
     return () => {
       google.maps.event.removeListener(idleListener);
@@ -269,7 +272,7 @@ function getGeolocation(location) {
 
 ### ✅ GOOD: Asynchronous Requests with Exponential Backoff
 
-For server-side or client-side web service calls (e.g., Geocoding, Places API *web services*), implement exponential backoff.
+For server-side or client-side web service calls (e.g., Geocoding, Places API _web services_), implement exponential backoff.
 
 ```javascript
 async function fetchWithExponentialBackoff(url, maxRetries = 5, initialDelay = 100) {
@@ -290,7 +293,7 @@ async function fetchWithExponentialBackoff(url, maxRetries = 5, initialDelay = 1
     } catch (error) {
       console.warn(`Attempt ${i + 1} failed: ${error.message}. Retrying in ${delay / 1000}s...`);
       if (i === maxRetries - 1) throw error; // Re-throw after last retry
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
       delay *= 2; // Exponential increase
     }
   }
@@ -302,13 +305,15 @@ async function geocodeAddress(address) {
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${process.env.GOOGLE_MAPS_SERVER_API_KEY}`;
   try {
     const data = await fetchWithExponentialBackoff(url);
-    if (data.status === 'OK') {
+    if (data.status === "OK") {
       return data.results[0].geometry.location;
     } else {
-      throw new Error(`Geocoding failed: ${data.status} - ${data.error_message || 'Unknown error'}`);
+      throw new Error(
+        `Geocoding failed: ${data.status} - ${data.error_message || "Unknown error"}`
+      );
     }
   } catch (error) {
-    console.error('Final Geocoding error:', error);
+    console.error("Final Geocoding error:", error);
     // Notify user or log for investigation
   }
 }
@@ -337,3 +342,4 @@ Always use a Map ID when initializing a map. This enables cloud-based map stylin
 
 ```javascript
 // ❌
+```

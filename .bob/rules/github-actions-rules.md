@@ -2,6 +2,7 @@
 description: This guide provides definitive, opinionated best practices for writing robust, secure, and performant GitHub Actions workflows. Follow these rules to build maintainable CI/CD pipelines.
 globs: **/*
 ---
+
 # github-actions Best Practices
 
 GitHub Actions is the backbone of modern CI/CD. Adhering to these best practices ensures your workflows are efficient, secure, and maintainable. This guide is your definitive reference for building high-quality pipelines.
@@ -15,6 +16,7 @@ Structure your workflows for clarity, reusability, and efficiency.
 Avoid duplication. Abstract common sequences into reusable workflows or composite actions.
 
 **❌ BAD: Duplicated Steps**
+
 ```yaml
 # .github/workflows/build-frontend.yml
 jobs:
@@ -38,6 +40,7 @@ jobs:
 ```
 
 **✅ GOOD: Reusable Workflow**
+
 ```yaml
 # .github/workflows/reusable-build.yml
 on:
@@ -72,6 +75,7 @@ jobs:
 Use clear, descriptive names for jobs and steps. This improves readability and debugging.
 
 **❌ BAD: Vague Naming**
+
 ```yaml
 jobs:
   job1:
@@ -83,6 +87,7 @@ jobs:
 ```
 
 **✅ GOOD: Descriptive Naming**
+
 ```yaml
 jobs:
   lint-and-test:
@@ -99,23 +104,25 @@ jobs:
 Test across multiple OSes, Node.js versions, or other configurations efficiently.
 
 **❌ BAD: Separate Jobs for Each Variant**
+
 ```yaml
 jobs:
   test-node-18-ubuntu:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v4
-        with: { node-version: '18' }
+        with: { node-version: "18" }
       - run: npm test
   test-node-20-ubuntu:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with: { node-version: "20" }
       - run: npm test
 ```
 
 **✅ GOOD: Single Job with Matrix**
+
 ```yaml
 jobs:
   test:
@@ -135,6 +142,7 @@ jobs:
 Prevent simultaneous runs on the same environment, especially for deployments.
 
 **❌ BAD: Overlapping Deployments**
+
 ```yaml
 jobs:
   deploy:
@@ -143,6 +151,7 @@ jobs:
 ```
 
 **✅ GOOD: Enforced Concurrency**
+
 ```yaml
 jobs:
   deploy:
@@ -163,12 +172,14 @@ Optimize your workflows for speed and cost-efficiency.
 Significantly reduce build times by caching `node_modules`, `pip` packages, etc.
 
 **❌ BAD: Reinstalling Dependencies Every Run**
+
 ```yaml
 steps:
   - run: npm ci # Always downloads everything
 ```
 
 **✅ GOOD: Smart Caching**
+
 ```yaml
 steps:
   - uses: actions/cache@v4
@@ -189,6 +200,7 @@ Enforce high standards and ensure supply chain integrity.
 Catch issues before they merge. Complement with local pre-commit hooks.
 
 **❌ BAD: No Early Checks**
+
 ```yaml
 jobs:
   build:
@@ -197,6 +209,7 @@ jobs:
 ```
 
 **✅ GOOD: Shift-Left Quality Checks**
+
 ```yaml
 jobs:
   lint:
@@ -205,7 +218,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with: { node-version: "20" }
       - run: npm ci
       - run: npm run lint # Fail fast
   test:
@@ -221,11 +234,13 @@ jobs:
 Prevent unexpected changes from breaking your workflows or introducing vulnerabilities.
 
 **❌ BAD: Floating Version Tag**
+
 ```yaml
 uses: actions/checkout@v4 # v4 could update at any time
 ```
 
 **✅ GOOD: Specific Version Tag or SHA**
+
 ```yaml
 uses: actions/checkout@v4.1.1 # Pin to specific patch
 # OR (most secure)
@@ -241,12 +256,14 @@ Protect your secrets and mitigate common attack vectors.
 Never hardcode sensitive values. Use GitHub's built-in secret management.
 
 **❌ BAD: Hardcoded Secrets**
+
 ```yaml
 env:
   API_KEY: "sk_test_12345" # Exposed in workflow file
 ```
 
 **✅ GOOD: GitHub Secrets**
+
 ```yaml
 env:
   API_KEY: ${{ secrets.MY_API_KEY }} # Securely referenced
@@ -257,6 +274,7 @@ env:
 Set default `GITHUB_TOKEN` permissions to read-only, then elevate only when necessary for specific jobs.
 
 **❌ BAD: Overly Permissive Default**
+
 ```yaml
 permissions: write-all # Grants write access to many scopes by default
 jobs:
@@ -267,6 +285,7 @@ jobs:
 ```
 
 **✅ GOOD: Granular Permissions**
+
 ```yaml
 permissions:
   contents: read # Default to read-only for all jobs
@@ -287,11 +306,13 @@ jobs:
 Use `::add-mask::` for any non-GitHub secret sensitive values that might appear in logs.
 
 **❌ BAD: Printing Sensitive Output**
+
 ```yaml
 - run: echo "Debug info: ${{ env.TEMP_TOKEN }}" # TEMP_TOKEN will be visible
 ```
 
 **✅ GOOD: Masking Output**
+
 ```yaml
 - run: echo "::add-mask::${{ env.TEMP_TOKEN }}"
 - run: echo "Debug info: ${{ env.TEMP_TOKEN }}" # TEMP_TOKEN will be masked
@@ -302,11 +323,13 @@ Use `::add-mask::` for any non-GitHub secret sensitive values that might appear 
 Always pass untrusted input (e.g., from `github.event.pull_request.title`) to scripts via environment variables, not direct interpolation.
 
 **❌ BAD: Direct Interpolation**
+
 ```yaml
 - run: echo "Title: ${{ github.event.pull_request.title }}" # Vulnerable to `"; rm -rf /"`
 ```
 
 **✅ GOOD: Intermediate Environment Variable**
+
 ```yaml
 - name: Check PR Title
   env:
@@ -326,11 +349,13 @@ Be aware of these common issues to avoid debugging headaches.
 Enable verbose logging for a specific workflow run to diagnose issues.
 
 **❌ BAD: Guessing at Failures**
+
 ```yaml
 # Workflow fails, no extra info
 ```
 
 **✅ GOOD: Enable Debugging**
+
 1.  Go to your repository settings.
 2.  Navigate to "Secrets and variables" -> "Actions" -> "Repository secrets".
 3.  Add a new repository secret: `ACTIONS_STEP_DEBUG` with value `true`.
@@ -342,6 +367,7 @@ Enable verbose logging for a specific workflow run to diagnose issues.
 Use `if` conditions for steps or jobs effectively.
 
 **❌ BAD: Incorrect `if` syntax**
+
 ```yaml
 - name: Deploy if main
   if: github.ref == 'main' # This is for steps, not jobs
@@ -349,6 +375,7 @@ Use `if` conditions for steps or jobs effectively.
 ```
 
 **✅ GOOD: Proper `if` Placement**
+
 ```yaml
 jobs:
   deploy:
@@ -368,11 +395,13 @@ Integrate robust testing into your CI/CD pipeline.
 Use GitHub's built-in code scanning to find security vulnerabilities early.
 
 **❌ BAD: No Automated Security Scans**
+
 ```yaml
 # Relying solely on manual review for security
 ```
 
 **✅ GOOD: Integrated Code Scanning**
+
 ```yaml
 jobs:
   code-scan:

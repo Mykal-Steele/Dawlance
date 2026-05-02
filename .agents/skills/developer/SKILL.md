@@ -20,6 +20,7 @@ Follow all conventions in AGENTS.md (Next.js App Router, TypeScript, React patte
 ### Step 1 -- Write the code
 
 Make changes file by file, following the plan order. For each file:
+
 - Use the Edit tool for modifications (not Bash with sed/awk)
 - Use Write only for new files
 - Keep changes minimal and focused
@@ -29,6 +30,7 @@ Make changes file by file, following the plan order. For each file:
 ### Step 2 -- Self-review
 
 After all changes are made, re-read each modified file to verify:
+
 - No syntax errors
 - Imports use `.js` extensions
 - No accidental duplicate code

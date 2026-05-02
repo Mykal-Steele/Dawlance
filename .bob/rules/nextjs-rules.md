@@ -2,6 +2,7 @@
 description: This guide defines definitive best practices for Next.js applications, focusing on the `app` directory, Server Components, performance, and maintainability. Follow these rules to build robust, scalable, and performant Next.js projects.
 globs: **/*.{js,jsx,ts,tsx}
 ---
+
 # next-js Best Practices
 
 This document outlines the definitive best practices for developing Next.js applications. Adhering to these guidelines ensures consistent, performant, and maintainable code, leveraging Next.js's strengths for modern web development.
@@ -16,16 +17,24 @@ Group all related files for a feature (components, pages, layouts, hooks, types)
 
 ```tsx
 // app/dashboard/page.tsx
-export default function DashboardPage() { /* ... */ }
+export default function DashboardPage() {
+  /* ... */
+}
 
 // app/dashboard/layout.tsx
-export default function DashboardLayout({ children }) { /* ... */ }
+export default function DashboardLayout({ children }) {
+  /* ... */
+}
 
 // app/dashboard/components/DashboardOverview.tsx
-export function DashboardOverview() { /* ... */ }
+export function DashboardOverview() {
+  /* ... */
+}
 
 // app/dashboard/hooks/useDashboardData.ts
-export function useDashboardData() { /* ... */ }
+export function useDashboardData() {
+  /* ... */
+}
 ```
 
 ### ❌ BAD: Type-Driven `app/` Directory
@@ -40,12 +49,12 @@ Avoid scattering files of the same feature across different top-level type direc
 
 ### Core Directories
 
-*   **`app/`**: All route-related files (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, `route.ts`).
-*   **`components/`**: Reusable UI components that are *not* directly tied to a specific route.
-*   **`lib/`**: Backend-agnostic utility functions, data access layers, and third-party integrations.
-*   **`hooks/`**: Custom React hooks for reusable logic.
-*   **`types/`**: Global TypeScript type definitions and interfaces.
-*   **`public/`**: Static assets (images, fonts) that are served directly.
+- **`app/`**: All route-related files (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, `route.ts`).
+- **`components/`**: Reusable UI components that are _not_ directly tied to a specific route.
+- **`lib/`**: Backend-agnostic utility functions, data access layers, and third-party integrations.
+- **`hooks/`**: Custom React hooks for reusable logic.
+- **`types/`**: Global TypeScript type definitions and interfaces.
+- **`public/`**: Static assets (images, fonts) that are served directly.
 
 ## 2. Component Architecture: Server Components First
 
@@ -57,7 +66,7 @@ Server Components reduce client-side JavaScript bundles, improve initial page lo
 
 ```tsx
 // app/products/[id]/page.tsx (Server Component by default)
-import { getProductDetails } from '@/lib/api';
+import { getProductDetails } from "@/lib/api";
 
 export default async function ProductPage({ params }) {
   const product = await getProductDetails(params.id);
@@ -77,9 +86,9 @@ Place the `"use client"` directive at the lowest possible point in your componen
 
 ```tsx
 // components/AddToCartButton.tsx
-'use client'; // Only this component and its children are client-side
+"use client"; // Only this component and its children are client-side
 
-import { useState } from 'react';
+import { useState } from "react";
 
 export function AddToCartButton({ productId }) {
   const [quantity, setQuantity] = useState(1);
@@ -94,8 +103,8 @@ Don't mark entire feature folders or layouts as client components if only a smal
 
 ```tsx
 // app/products/[id]/page.tsx (BAD: entire page marked client)
-'use client'; // This makes the whole page a client component
-import { useState, useEffect } from 'react'; // Even if only a small part needs it
+"use client"; // This makes the whole page a client component
+import { useState, useEffect } from "react"; // Even if only a small part needs it
 
 export default function ProductPage({ params }) {
   // ...
@@ -113,14 +122,11 @@ Directly fetch data in Server Components. `fetch` requests are automatically mem
 
 ```tsx
 // app/dashboard/page.tsx
-import { getUserProfile, getRecentOrders } from '@/lib/api';
+import { getUserProfile, getRecentOrders } from "@/lib/api";
 
 export default async function DashboardPage() {
   // Data fetches in parallel
-  const [user, orders] = await Promise.all([
-    getUserProfile(),
-    getRecentOrders(),
-  ]);
+  const [user, orders] = await Promise.all([getUserProfile(), getRecentOrders()]);
 
   return (
     <div>
@@ -137,8 +143,8 @@ Use `route.ts` for API endpoints that handle client-side data mutations (e.g., f
 
 ```tsx
 // app/api/cart/route.ts
-import { NextResponse } from 'next/server';
-import { addToCart } from '@/lib/cart';
+import { NextResponse } from "next/server";
+import { addToCart } from "@/lib/cart";
 
 export async function POST(request: Request) {
   const { productId, quantity } = await request.json();
@@ -158,8 +164,8 @@ export default function Loading() {
 }
 
 // app/dashboard/page.tsx (assuming some slow component)
-import { Suspense } from 'react';
-import { SlowComponent } from './components/SlowComponent';
+import { Suspense } from "react";
+import { SlowComponent } from "./components/SlowComponent";
 
 export default async function DashboardPage() {
   return (
@@ -182,19 +188,11 @@ Leverage Next.js's built-in optimizations for images, fonts, and code splitting.
 Always use `next/image` for local and remote images. It provides automatic optimization, lazy loading, and responsive sizing.
 
 ```tsx
-import Image from 'next/image';
-import profilePic from '@/public/profile.jpg';
+import Image from "next/image";
+import profilePic from "@/public/profile.jpg";
 
 export function UserAvatar() {
-  return (
-    <Image
-      src={profilePic}
-      alt="User Profile"
-      width={100}
-      height={100}
-      placeholder="blur"
-    />
-  );
+  return <Image src={profilePic} alt="User Profile" width={100} height={100} placeholder="blur" />;
 }
 ```
 
@@ -214,9 +212,9 @@ export function UserAvatar() {
 Use `next/font` to optimize font loading, eliminate external network requests, and prevent layout shift.
 
 ```tsx
-import { Inter } from 'next/font/google';
+import { Inter } from "next/font/google";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }) {
   return (
@@ -232,9 +230,9 @@ export default function RootLayout({ children }) {
 Lazily load heavy client-side components or third-party libraries using `next/dynamic`.
 
 ```tsx
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
-const HeavyChart = dynamic(() => import('./components/HeavyChart'), {
+const HeavyChart = dynamic(() => import("./components/HeavyChart"), {
   loading: () => <p>Loading chart...</p>,
   ssr: false, // Only load on client if not needed for initial render
 });
@@ -257,8 +255,8 @@ Keep state local where possible. For global state, use React Context for simple 
 For component-specific, ephemeral state.
 
 ```tsx
-'use client';
-import { useState } from 'react';
+"use client";
+import { useState } from "react";
 
 export function Counter() {
   const [count, setCount] = useState(0);
@@ -272,7 +270,7 @@ For application-wide state that needs to be shared across many components. Prefe
 
 ```tsx
 // lib/store.ts (using Zustand)
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface BearState {
   bears: number;
@@ -295,9 +293,9 @@ Catch errors within a specific route segment, providing localized fallback UI.
 
 ```tsx
 // app/dashboard/error.tsx
-'use client'; // Error boundaries must be client components
+"use client"; // Error boundaries must be client components
 
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 export default function Error({ error, reset }) {
   useEffect(() => {
@@ -319,7 +317,7 @@ Catch uncaught errors across your entire application, providing a consistent fal
 
 ```tsx
 // app/global-error.tsx
-'use client';
+"use client";
 
 export default function GlobalError({ error, reset }) {
   return (
@@ -359,9 +357,9 @@ This configuration elevates performance-related warnings to errors, ensuring you
 
 ```javascript
 // eslint.config.mjs
-import { defineConfig, globalIgnores } from 'eslint/config';
-import nextVitals from 'eslint-config-next/core-web-vitals';
-import nextTs from 'eslint-config-next/typescript'; // For TypeScript projects
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript"; // For TypeScript projects
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -369,16 +367,11 @@ const eslintConfig = defineConfig([
   {
     rules: {
       // Custom overrides or additional rules here
-      '@next/next/no-img-element': 'error', // Enforce next/image
+      "@next/next/no-img-element": "error", // Enforce next/image
       // ...
     },
   },
-  globalIgnores([
-    '.next/**',
-    'out/**',
-    'build/**',
-    'next-env.d.ts',
-  ]),
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
 ]);
 
 export default eslintConfig;
@@ -402,10 +395,10 @@ This bypasses Next.js's automatic prefetching and client-side navigation.
 Enables client-side navigation and prefetching for a smoother user experience.
 
 ```tsx
-import Link from 'next/link';
+import Link from "next/link";
 
 // ✅ GOOD
-<Link href="/dashboard">Go to Dashboard</Link>
+<Link href="/dashboard">Go to Dashboard</Link>;
 ```
 
 ### ❌ BAD: Async Client Components
@@ -414,7 +407,7 @@ Client Components cannot be `async`. If you need to fetch data on the client, us
 
 ```tsx
 // components/MyClientComponent.tsx
-'use client';
+"use client";
 
 // ❌ BAD: Client Components cannot be async
 export default async function MyClientComponent() {
@@ -429,21 +422,21 @@ Use `useEffect` or a dedicated client-side library (like SWR or React Query) for
 
 ```tsx
 // components/MyClientComponent.tsx
-'use client';
-import { useState, useEffect } from 'react';
+"use client";
+import { useState, useEffect } from "react";
 
 export default function MyClientComponent() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
     async function fetchData() {
-      const res = await fetch('/api/data');
+      const res = await fetch("/api/data");
       const json = await res.json();
       setData(json);
     }
     fetchData();
   }, []);
 
-  return <div>{data ? `Data: ${data.message}` : 'Loading...'}</div>;
+  return <div>{data ? `Data: ${data.message}` : "Loading..."}</div>;
 }
 ```

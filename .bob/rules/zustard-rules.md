@@ -2,6 +2,7 @@
 description: Definitive guidelines for using Zustand in React projects, focusing on type safety, modularity, performance, and maintainability with practical code examples.
 globs: **/*.{js,jsx}
 ---
+
 # zustand Best Practices
 
 Zustand is our go-to for global state management due to its minimal API and built-in performance optimizations. This guide outlines the definitive patterns for using Zustand effectively in our projects, ensuring type safety, modularity, and optimal performance.
@@ -11,8 +12,9 @@ Zustand is our go-to for global state management due to its minimal API and buil
 Always define explicit TypeScript interfaces for your store's state and actions. This provides invaluable type safety and auto-completion across the application, preventing common runtime errors.
 
 ❌ BAD: Untyped store, prone to runtime errors
+
 ```typescript
-import { create } from 'zustand';
+import { create } from "zustand";
 
 const useStore = create((set) => ({
   count: 0,
@@ -21,8 +23,9 @@ const useStore = create((set) => ({
 ```
 
 ✅ GOOD: Fully typed store for robust development
+
 ```typescript
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface CounterState {
   count: number;
@@ -42,8 +45,9 @@ const useCounterStore = create<CounterState>((set) => ({
 For scalable applications, organize your store into logical "slices" (e.g., `authSlice`, `uiSlice`). This keeps concerns separated, improves readability, and makes testing easier. Compose these slices into a single root store.
 
 `src/store/types.ts`:
+
 ```typescript
-import { StateCreator } from 'zustand';
+import { StateCreator } from "zustand";
 
 // Define individual slice interfaces
 export interface AuthSlice {
@@ -66,8 +70,9 @@ export type AppStateCreator<T> = StateCreator<AppState, [], [], T>;
 ```
 
 `src/store/slices/createAuthSlice.ts`:
+
 ```typescript
-import { AppStateCreator, AuthSlice } from '../types';
+import { AppStateCreator, AuthSlice } from "../types";
 
 export const createAuthSlice: AppStateCreator<AuthSlice> = (set) => ({
   user: null,
@@ -78,8 +83,9 @@ export const createAuthSlice: AppStateCreator<AuthSlice> = (set) => ({
 ```
 
 `src/store/slices/createUISlice.ts`:
+
 ```typescript
-import { AppStateCreator, UISlice } from '../types';
+import { AppStateCreator, UISlice } from "../types";
 
 export const createUISlice: AppStateCreator<UISlice> = (set) => ({
   isLoading: false,
@@ -88,11 +94,12 @@ export const createUISlice: AppStateCreator<UISlice> = (set) => ({
 ```
 
 `src/store/useAppStore.ts`:
+
 ```typescript
-import { create } from 'zustand';
-import { AppState } from './types';
-import { createAuthSlice } from './slices/createAuthSlice';
-import { createUISlice } from './slices/createUISlice';
+import { create } from "zustand";
+import { AppState } from "./types";
+import { createAuthSlice } from "./slices/createAuthSlice";
+import { createUISlice } from "./slices/createUISlice";
 
 export const useAppStore = create<AppState>()((...a) => ({
   ...createAuthSlice(...a),
@@ -104,12 +111,13 @@ export const useAppStore = create<AppState>()((...a) => ({
 
 Follow consistent naming for clarity and discoverability.
 
-*   **Store Hook**: `use[Feature]Store` or `useAppStore` for the root.
-*   **Actions**: Verb-oriented (e.g., `increment`, `setUser`, `fetchData`).
-*   **Store Files**: Located under `src/store/` or `src/features/[feature]/store.ts`.
-*   **Exports**: Only export the custom hook, never the raw `create` object.
+- **Store Hook**: `use[Feature]Store` or `useAppStore` for the root.
+- **Actions**: Verb-oriented (e.g., `increment`, `setUser`, `fetchData`).
+- **Store Files**: Located under `src/store/` or `src/features/[feature]/store.ts`.
+- **Exports**: Only export the custom hook, never the raw `create` object.
 
 ❌ BAD: Inconsistent naming, exposing raw store
+
 ```typescript
 // store.js
 export const myStore = create(...); // Exposes raw store
@@ -120,6 +128,7 @@ myStore.setState({ ... }); // Direct mutation outside hook, bypasses React lifec
 ```
 
 ✅ GOOD: Clear, consistent, and encapsulated
+
 ```typescript
 // src/store/useAppStore.ts
 export const useAppStore = create<AppState>(...);
@@ -137,6 +146,7 @@ const { user, login } = useAppStore();
 Always use functional updates (`set(state => ...)`) when an action's new state depends on the current state. This prevents issues with stale closures in asynchronous operations or rapid updates.
 
 ❌ BAD: Potential stale closure, especially in async operations
+
 ```typescript
 const useCounterStore = create<CounterState>((set, get) => ({
   count: 0,
@@ -150,6 +160,7 @@ const useCounterStore = create<CounterState>((set, get) => ({
 ```
 
 ✅ GOOD: Robust functional update, `state` is always the latest
+
 ```typescript
 const useCounterStore = create<CounterState>((set) => ({
   count: 0,
@@ -166,6 +177,7 @@ const useCounterStore = create<CounterState>((set) => ({
 Consume only the necessary parts of the state using selectors. For objects or arrays, use `shallow` (or a custom equality function) to prevent unnecessary re-renders when only nested properties change.
 
 ❌ BAD: Re-renders component on any state change in the store
+
 ```typescript
 const MyComponent = () => {
   const { user, token } = useAppStore(); // Re-renders if any part of AppState changes
@@ -174,9 +186,10 @@ const MyComponent = () => {
 ```
 
 ✅ GOOD: Optimized re-renders with selectors and `shallow`
+
 ```typescript
-import { shallow } from 'zustand/shallow';
-import { useAppStore } from 'src/store/useAppStore';
+import { shallow } from "zustand/shallow";
+import { useAppStore } from "src/store/useAppStore";
 
 const UserProfile = () => {
   // Only re-renders if user.name or user.email changes
@@ -198,28 +211,31 @@ const AuthStatus = () => {
 
 Leverage Zustand's middleware for common concerns like persistence, devtools integration, and immutable updates.
 
-*   **`persist`**: For local storage or IndexedDB. Always provide a `name` and consider `version` for migrations.
-*   **`devtools`**: Integrate with Redux DevTools. Enable only in development.
-*   **`immer`**: For simplified immutable updates, especially with deeply nested objects.
+- **`persist`**: For local storage or IndexedDB. Always provide a `name` and consider `version` for migrations.
+- **`devtools`**: Integrate with Redux DevTools. Enable only in development.
+- **`immer`**: For simplified immutable updates, especially with deeply nested objects.
 
 ```typescript
-import { create } from 'zustand';
-import { persist, devtools, createJSONStorage } from 'zustand/middleware';
-import { immer } from 'zustand/middleware/immer';
+import { create } from "zustand";
+import { persist, devtools, createJSONStorage } from "zustand/middleware";
+import { immer } from "zustand/middleware/immer";
 
 interface SettingsState {
-  theme: 'light' | 'dark';
+  theme: "light" | "dark";
   notifications: { enabled: boolean; sound: boolean };
-  setTheme: (theme: 'light' | 'dark') => void;
+  setTheme: (theme: "light" | "dark") => void;
   toggleNotifications: () => void;
   toggleNotificationSound: () => void;
 }
 
 const useSettingsStore = create<SettingsState>()(
-  devtools( // Enable devtools for debugging
-    persist( // Persist state to storage
-      immer((set) => ({ // Use immer for easier immutable updates
-        theme: 'light',
+  devtools(
+    // Enable devtools for debugging
+    persist(
+      // Persist state to storage
+      immer((set) => ({
+        // Use immer for easier immutable updates
+        theme: "light",
         notifications: { enabled: true, sound: true },
         setTheme: (theme) => set({ theme }),
         toggleNotifications: () =>
@@ -232,13 +248,13 @@ const useSettingsStore = create<SettingsState>()(
           }),
       })),
       {
-        name: 'app-settings', // Unique name for storage key
+        name: "app-settings", // Unique name for storage key
         storage: createJSONStorage(() => localStorage), // Choose storage type
         version: 1, // Crucial for future migrations
         partialize: (state) => ({ theme: state.theme }), // Only persist 'theme'
       }
     ),
-    { name: 'Settings Store', enabled: process.env.NODE_ENV === 'development' } // Devtools options
+    { name: "Settings Store", enabled: process.env.NODE_ENV === "development" } // Devtools options
   )
 );
 ```
@@ -248,6 +264,7 @@ const useSettingsStore = create<SettingsState>()(
 Declare your `create` calls at the module level (top of the file) to ensure a single, consistent store instance across your application. Never call `create` inside a React component.
 
 ❌ BAD: Creates new store instance on every render
+
 ```typescript
 const MyComponent = () => {
   // This creates a NEW store instance every time MyComponent re-renders!
@@ -258,6 +275,7 @@ const MyComponent = () => {
 ```
 
 ✅ GOOD: Single store instance, declared once
+
 ```typescript
 // At the top of your store file (e.g., src/store/useCounterStore.ts)
 const useCounterStore = create<CounterState>((set) => ({
@@ -292,3 +310,4 @@ const useUserStore = create<UserState>((set) => ({
     try {
       const response = await fetch(`/api/users/${userId}`);
       if (!response.ok) throw new Error('Failed
+```

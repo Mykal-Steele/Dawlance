@@ -12,6 +12,7 @@ Follow all project conventions from AGENTS.md (Next.js App Router, TypeScript, R
 ## When to plan
 
 Always plan when:
+
 - The change touches more than one file
 - A new feature, page, or component is being added
 - The change involves the recommendation selection or itinerary generation flow
@@ -19,6 +20,7 @@ Always plan when:
 - The change affects the two-phase architecture (recommendation → itinerary)
 
 Skip planning (just do it) when:
+
 - Single-line typo or constant fix
 - The user explicitly says "just do it" or "quick fix"
 
@@ -36,6 +38,7 @@ Read the relevant source files before planning. Never plan based on assumptions 
 ### Step 2 -- Identify affected files
 
 List every file that needs to change. For each file, note:
+
 - What section/function changes
 - Why it changes
 - Dependencies on other changes in the plan
@@ -43,6 +46,7 @@ List every file that needs to change. For each file, note:
 ### Step 3 -- Define guardrails
 
 For every plan, explicitly state:
+
 - **Lint**: Will this pass `npm run lint` (zero warnings)?
 - **Build**: Will `npm run build` succeed?
 - **Type-check**: Will `npm run type-check` pass?

@@ -2,6 +2,7 @@
 description: This guide defines definitive best practices for developing with shadcn/ui, ensuring consistent code organization, robust TypeScript, optimal performance, and accessible, maintainable components.
 globs: **/*
 ---
+
 # shadcn Best Practices
 
 This document outlines our team's definitive best practices for developing with `shadcn/ui`. Adhere to these guidelines for all `shadcn` component development and integration.
@@ -13,6 +14,7 @@ Organize components logically to reflect UI hierarchy and promote discoverabilit
 **Rule:** Place domain-specific components under `components/<domain>` and reusable UI primitives under `components/ui`. Each component must reside in its own PascalCase file.
 
 ❌ BAD:
+
 ```
 // components/Button.tsx
 // components/profile-card.tsx
@@ -20,6 +22,7 @@ Organize components logically to reflect UI hierarchy and promote discoverabilit
 ```
 
 ✅ GOOD:
+
 ```
 // components/ui/Button.tsx
 // components/forms/DatePicker.tsx
@@ -37,14 +40,14 @@ Favor functional components, composition, and explicit prop definitions.
 **Rule:** Use functional components with `React.forwardRef` and `asChild` for seamless integration with Radix primitives.
 
 ❌ BAD:
+
 ```tsx
 // No ref forwarding, no asChild
-const Button = ({ children, onClick }) => (
-  <button onClick={onClick}>{children}</button>
-);
+const Button = ({ children, onClick }) => <button onClick={onClick}>{children}</button>;
 ```
 
 ✅ GOOD:
+
 ```tsx
 // components/ui/Button.tsx
 import * as React from "react";
@@ -73,8 +76,7 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
 
@@ -82,11 +84,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
     return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
+      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
     );
   }
 );
@@ -102,6 +100,7 @@ Enforce strict TypeScript with clear interfaces and robust validation.
 **Rule:** Use interfaces for component props. Validate form data with Zod schemas. Avoid `any` and prefer explicit types.
 
 ❌ BAD:
+
 ```typescript
 // Vague props, no validation
 type UserFormProps = {
@@ -111,6 +110,7 @@ type UserFormProps = {
 ```
 
 ✅ GOOD:
+
 ```typescript
 // components/forms/UserForm.tsx
 import { z } from "zod";
@@ -136,12 +136,14 @@ Leverage Tailwind CSS and `class-variance-authority` (CVA) for consistent, maint
 **Rule:** Define component variants using CVA. Use the `cn` utility for conditional class merging. Centralize Tailwind configuration and design tokens.
 
 ❌ BAD:
+
 ```tsx
 // Inconsistent inline styles or direct class manipulation
 <button className={`p-2 ${isActive ? 'bg-blue-500' : 'bg-gray-200'}`}>
 ```
 
 ✅ GOOD:
+
 ```tsx
 // components/ui/Badge.tsx
 import { cva, type VariantProps } from "class-variance-authority";
@@ -164,13 +166,10 @@ const badgeVariants = cva(
 );
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
+  extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
-  return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
-  );
+  return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
 
 export { Badge, badgeVariants };
@@ -181,6 +180,7 @@ export { Badge, badgeVariants };
 **Rule:** Use React Hook Form with Zod for all forms. Implement early returns and guard clauses for error handling.
 
 ❌ BAD:
+
 ```tsx
 // Deeply nested logic, manual form state
 if (data) {
@@ -192,6 +192,7 @@ if (data) {
 ```
 
 ✅ GOOD:
+
 ```tsx
 // Early return for invalid state
 if (!user) {
@@ -209,11 +210,7 @@ function UserProfileForm({ initialData, onSubmit }: UserFormProps) {
     defaultValues: initialData,
   });
 
-  return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      {/* Form fields */}
-    </form>
-  );
+  return <form onSubmit={form.handleSubmit(onSubmit)}>{/* Form fields */}</form>;
 }
 ```
 
@@ -224,6 +221,7 @@ Optimize for fast initial loads and smooth interactions.
 **Rule:** Lazy-load heavy UI sections (e.g., dialogs, data tables) using `React.lazy` or dynamic imports. Memoize expensive components and callbacks.
 
 ❌ BAD:
+
 ```tsx
 // Always loads heavy component
 import { BigComplexChart } from "./BigComplexChart";
@@ -233,6 +231,7 @@ function Dashboard() {
 ```
 
 ✅ GOOD:
+
 ```tsx
 // Lazy load for better initial performance
 import React from "react";
@@ -266,16 +265,18 @@ Build inclusive UIs by leveraging Radix primitives and ARIA attributes.
 **Rule:** Always use `shadcn/ui` components as they are built on Radix UI and provide excellent accessibility out-of-the-box. Ensure custom components correctly pass ARIA attributes and manage focus.
 
 ❌ BAD:
+
 ```tsx
 // Custom button without ARIA attributes or proper semantics
 <div role="button" onClick={...}>Click me</div>
 ```
 
 ✅ GOOD:
+
 ```tsx
 // Leverage shadcn/ui's accessible Button
 import { Button } from "@/components/ui/Button";
-<Button onClick={() => alert("Action!")}>Perform Action</Button>
+<Button onClick={() => alert("Action!")}>Perform Action</Button>;
 ```
 
 ## 8. Common Pitfalls and Gotchas
@@ -285,6 +286,7 @@ Avoid these common mistakes to maintain a scalable and robust codebase.
 **Rule:** Never directly modify `shadcn/ui` component files. Instead, extend them with `cn` or wrap them in higher-order components. Avoid `dangerouslySetInnerHTML`.
 
 ❌ BAD:
+
 ```tsx
 // Direct modification of a shadcn component (will be overwritten by CLI updates)
 // components/ui/button.tsx (modified directly)
@@ -296,15 +298,16 @@ Avoid these common mistakes to maintain a scalable and robust codebase.
 ```
 
 ✅ GOOD:
+
 ```tsx
 // Extend with cn for custom styles
 import { Button } from "@/components/ui/Button";
-<Button className="bg-red-500 hover:bg-red-600">Custom Red Button</Button>
+<Button className="bg-red-500 hover:bg-red-600">Custom Red Button</Button>;
 ```
 
 ```tsx
 // Sanitize and render text content safely
-import DOMPurify from 'dompurify';
+import DOMPurify from "dompurify";
 
 const sanitizedContent = DOMPurify.sanitize(userProvidedContent);
 return <div className="prose" dangerouslySetInnerHTML={{ __html: sanitizedContent }} />;
