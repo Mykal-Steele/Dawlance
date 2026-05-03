@@ -59,4 +59,3 @@ export const destinationSchema = z
  */
 export type DestinationFormData = z.infer<typeof destinationSchema>;
 
-// Made with Bob

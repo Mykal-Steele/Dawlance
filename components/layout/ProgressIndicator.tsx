@@ -73,4 +73,3 @@ export function ProgressIndicator({
   );
 }
 
-// Made with Bob

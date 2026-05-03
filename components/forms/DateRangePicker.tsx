@@ -35,15 +35,6 @@ export interface DateRangePickerProps {
   disabled?: boolean;
 }
 
-// react-day-picker v9 structure:
-//   <td class="[day class] [modifier classes e.g. range_start]">
-//     <button class="[day_button class only — no modifier classes]">27</button>
-//   </td>
-//
-// To style button text inside a modifier td, use [&>button]: arbitrary selector.
-// This generates ".modifier > button { ... }" which has specificity 0,1,1 —
-// higher than ".day_button { ... }" at 0,1,0 — so it reliably overrides.
-
 const DAY_BUTTON = [
   "h-9 w-9 rounded-lg text-sm font-medium text-gray-900 transition-colors",
   "hover:bg-[#2A7BFF]/10 hover:text-[#2A7BFF]",

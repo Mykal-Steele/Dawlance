@@ -206,4 +206,3 @@ export function ActivityCard({
   );
 }
 
-// Made with Bob

@@ -89,7 +89,6 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
   function handleSend(message: string): void {
     if (chatMutation.isPending) return;
 
-    // Add user message to store immediately
     addMessage({
       id: `user-${Date.now()}`,
       role: "user",
@@ -104,7 +103,6 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
 
   function handleSuggestionClick(suggestion: string): void {
     if (suggestion === "Fill my open slots" && itinerary) {
-      // Build an explicit message so the model knows exactly which slot IDs to use
       const emptySlots: { dayIndex: number; date: string; id: string; time: string }[] = [];
       itinerary.days.forEach((day, dIdx) => {
         day.activities.forEach((act) => {
@@ -248,12 +246,8 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
       return;
     }
 
-    // For remaining action types, send a follow-up chat message
     handleSend(action.label);
   }
-
-  // Proactive greeting removed — assistant only responds when the user speaks first
-  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   // ─── Draggable + resizable panel state ────────────────────────────────────
 

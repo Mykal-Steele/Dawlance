@@ -91,11 +91,7 @@ export interface ChatCompleteParams {
   timeLimitMs?: number;
 }
 
-/**
- * Calls /ml/v1/text/chat (non-streaming).
- * Preferred for all structured output (itinerary, recalculate) — use jsonMode: true
- * to force valid JSON without markdown fences.
- */
+/** Non-streaming chat completion. Use `jsonMode: true` to enforce valid JSON output. */
 export async function chatComplete(params: ChatCompleteParams): Promise<string> {
   const projectId = process.env.WATSONX_PROJECT_ID;
   if (!projectId) throw new Error("WATSONX_PROJECT_ID is not set");
@@ -150,13 +146,7 @@ export interface StreamChatParams {
   temperature?: number;
 }
 
-/**
- * Calls /ml/v1/text/chat_stream and returns the raw response body as a
- * ReadableStream of SSE bytes. Each SSE event has:
- *   data: { choices: [{ delta: { content: "..." } }] }
- * terminated by:
- *   data: [DONE]
- */
+/** Streaming chat — returns SSE bytes. Caller is responsible for parsing `data:` events. */
 export async function streamChat(params: StreamChatParams): Promise<ReadableStream<Uint8Array>> {
   const projectId = process.env.WATSONX_PROJECT_ID;
   if (!projectId) throw new Error("WATSONX_PROJECT_ID is not set");
@@ -186,5 +176,3 @@ export async function streamChat(params: StreamChatParams): Promise<ReadableStre
 
   return res.body;
 }
-
-// Made with Bob

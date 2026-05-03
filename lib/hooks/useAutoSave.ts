@@ -32,4 +32,3 @@ export function useAutoSave(): void {
   }, [destination, startDate, endDate, preferences, selectedRecommendations]);
 }
 
-// Made with Bob

@@ -74,4 +74,3 @@ export function GroupDynamicsSelector({ value, onChange, error }: GroupDynamicsS
   );
 }
 
-// Made with Bob

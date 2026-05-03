@@ -169,12 +169,9 @@ export function ItineraryView({
   // Snapshot for optimistic rollback
   const rollbackRef = useRef<Itinerary | null>(null);
 
-  // Cloudant save state
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const cloudantRevRef = useRef<string | null>(null);
 
-  // ── Generate itinerary on mount if not yet available ───────────────────────
-  // ── Save to Cloudant ──────────────────────────────────────────────────────
   const handleSaveToCloudant = useCallback(async (itin: Itinerary) => {
     setSaveStatus("saving");
     try {
@@ -223,7 +220,6 @@ export function ItineraryView({
       preferences,
       selectedRecommendations,
     });
-    // Only trigger once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -655,5 +651,3 @@ export function ItineraryView({
     </div>
   );
 }
-
-// Made with Bob

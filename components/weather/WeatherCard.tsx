@@ -74,4 +74,3 @@ export function WeatherCard({ forecast, className }: WeatherCardProps) {
   );
 }
 
-// Made with Bob

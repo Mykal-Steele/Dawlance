@@ -49,4 +49,3 @@ export function CategoryFilter({ active, onChange, counts }: CategoryFilterProps
   );
 }
 
-// Made with Bob

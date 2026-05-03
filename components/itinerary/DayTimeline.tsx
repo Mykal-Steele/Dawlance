@@ -151,4 +151,3 @@ export function DayTimeline({
   );
 }
 
-// Made with Bob

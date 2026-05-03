@@ -78,8 +78,6 @@ export function RouteMap({ day, dayLabel }: RouteMapProps): React.ReactElement {
         const map = new Map(mapRef.current, {
           center,
           zoom: 13,
-          // "DEMO_MAP_ID" is Google's built-in test Map ID that enables AdvancedMarkerElement.
-          // Override with NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID for a production registered Map ID.
           mapId: process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID ?? "DEMO_MAP_ID",
           disableDefaultUI: false,
           zoomControl: true,
@@ -184,7 +182,6 @@ export function RouteMap({ day, dayLabel }: RouteMapProps): React.ReactElement {
     return () => {
       cancelled = true;
     };
-    // Re-render when the day changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [day.date, apiKeyMissing]);
 
@@ -278,5 +275,3 @@ export function RouteMap({ day, dayLabel }: RouteMapProps): React.ReactElement {
     </div>
   );
 }
-
-// Made with Bob

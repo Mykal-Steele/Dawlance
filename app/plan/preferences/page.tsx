@@ -38,4 +38,3 @@ export default function PreferencesPage() {
   );
 }
 
-// Made with Bob

@@ -5,4 +5,3 @@ export { Sidebar } from "./Sidebar";
 export { ProgressIndicator } from "./ProgressIndicator";
 export { ErrorBoundary } from "./ErrorBoundary";
 
-// Made with Bob

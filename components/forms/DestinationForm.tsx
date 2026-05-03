@@ -46,9 +46,7 @@ export function DestinationForm() {
   const onSubmit: SubmitHandler<DestinationFormData> = async (data) => {
     setIsSubmitting(true);
     try {
-      // Wipe all downstream state from any previous trip before setting new destination.
-      // resetAllStores() resets form + selections + itinerary + AI history.
-      // We then set the new destination immediately after.
+      // Reset all downstream state before setting the new destination
       resetAllStores();
       queryClient.removeQueries({ queryKey: ["recommendations"] });
 

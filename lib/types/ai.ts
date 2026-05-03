@@ -38,4 +38,3 @@ export interface FillSlotPayload {
   };
 }
 
-// Made with Bob

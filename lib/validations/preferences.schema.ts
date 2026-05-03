@@ -69,4 +69,3 @@ export type PreferencesFormData = z.infer<typeof preferencesSchema>;
  */
 export const partialPreferencesSchema = preferencesSchema.partial();
 
-// Made with Bob

@@ -56,4 +56,3 @@ export function ClothingRecommendations({ items }: ClothingRecommendationsProps)
   );
 }
 
-// Made with Bob

@@ -52,4 +52,3 @@ export function RecommendationGrid({
   );
 }
 
-// Made with Bob

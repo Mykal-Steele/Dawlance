@@ -68,4 +68,3 @@ export function SearchBar({
   );
 }
 
-// Made with Bob

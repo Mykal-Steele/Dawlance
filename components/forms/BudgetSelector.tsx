@@ -92,4 +92,3 @@ export function BudgetSelector({ value, onChange, error }: BudgetSelectorProps) 
   );
 }
 
-// Made with Bob

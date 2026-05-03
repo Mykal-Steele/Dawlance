@@ -6,16 +6,7 @@ Establish project structure, design system, and core infrastructure. Everything 
 
 ## References (read before starting)
 
-- `00-overview.md § Technology Stack` — framework and tooling decisions
-- `00-overview.md § Design System` — Tailwind color palette (#2A7BFF, #6DD3B0, #FF8C42, #F8F9FA), typography (Plus Jakarta Sans, Be Vietnam Pro), component patterns
-- `00-overview.md § Component Architecture > Directory Structure` — the full `app/`, `components/`, `lib/` tree to create
-- `00-overview.md § Data Models > TypeScript Interfaces` — all interfaces to define in this phase
-- `00-overview.md § Data Models > Zod Validation Schemas` — schemas to create
-- `00-overview.md § State Management Strategy > Layer 1: Client State (Zustand)` — four store interfaces to implement (FormStore, SelectionStore, ItineraryStore, AIStore)
-- `00-overview.md § Error Handling > Error Recovery UI` — `ErrorState` interface and `errorMessages` config for the error boundary
-
-## Tasks
-
+- `00-overvie
 - [ ] Initialize Next.js 14+ project with TypeScript strict mode
 - [ ] Configure Tailwind CSS with custom design system
   - [ ] Color palette: #2A7BFF (primary), #6DD3B0 (secondary), #FF8C42 (tertiary), #F8F9FA (neutral), #3D4852 (text)
@@ -29,7 +20,16 @@ Establish project structure, design system, and core infrastructure. Everything 
 - [ ] Implement all four Zustand stores in `lib/stores/` (formStore, selectionStore, itineraryStore, aiStore)
 - [ ] Create basic layout components: Header, Footer, BottomNav (mobile), Sidebar (desktop), ProgressIndicator
 - [ ] Implement ErrorBoundary component using `ErrorState` interface and `errorMessages` config
-- [ ] Set up environment variables structure (`.env.local.example`):
+- [ ] Set up environment variables structuw.md § Technology Stack` — framework and tooling decisions
+- `00-overview.md § Design System` — Tailwind color palette (#2A7BFF, #6DD3B0, #FF8C42, #F8F9FA), typography (Plus Jakarta Sans, Be Vietnam Pro), component patterns
+- `00-overview.md § Component Architecture > Directory Structure` — the full `app/`, `components/`, `lib/` tree to create
+- `00-overview.md § Data Models > TypeScript Interfaces` — all interfaces to define in this phase
+- `00-overview.md § Data Models > Zod Validation Schemas` — schemas to create
+- `00-overview.md § State Management Strategy > Layer 1: Client State (Zustand)` — four store interfaces to implement (FormStore, SelectionStore, ItineraryStore, AIStore)
+- `00-overview.md § Error Handling > Error Recovery UI` — `ErrorState` interface and `errorMessages` config for the error boundary
+
+## Tasks
+re (`.env.local.example`):
   - `GEMINI_API_KEY` — Gemini AI
   - `GOOGLE_PLACES_API_KEY` — Google Places (hotels/restaurants)
   - `UNSPLASH_ACCESS_KEY` — Unsplash images

@@ -174,7 +174,6 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   const { message, context, conversationHistory } = parsed.data;
 
-  // Apply rate limiter before streaming
   await aiRateLimiter.throttle();
 
   const encoder = new TextEncoder();
@@ -188,7 +187,6 @@ export async function POST(request: NextRequest): Promise<Response> {
       try {
         const systemInstruction = buildSystemInstruction(context);
 
-        // Build messages array: system + conversation history + current user message
         const messages: ChatMessage[] = [
           { role: "system", content: systemInstruction },
           ...(conversationHistory ?? []).map((m) => ({

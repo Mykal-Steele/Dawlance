@@ -250,4 +250,3 @@ export function EmptyActivitySlot({
   );
 }
 
-// Made with Bob

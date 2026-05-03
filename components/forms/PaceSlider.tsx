@@ -42,4 +42,3 @@ export function PaceSlider({ value, onChange }: PaceSliderProps) {
   );
 }
 
-// Made with Bob

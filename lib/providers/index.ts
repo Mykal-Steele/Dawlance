@@ -6,4 +6,3 @@
 
 export * from "./query-provider";
 
-// Made with Bob

@@ -41,4 +41,3 @@ export function RecommendationSkeletonGrid() {
   );
 }
 
-// Made with Bob

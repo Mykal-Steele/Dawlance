@@ -104,4 +104,3 @@ export function WeatherDashboard() {
   );
 }
 
-// Made with Bob

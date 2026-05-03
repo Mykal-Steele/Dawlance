@@ -18,4 +18,3 @@ export interface UserPreferences {
   accessibilityNeeds?: string[];
 }
 
-// Made with Bob

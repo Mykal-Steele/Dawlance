@@ -212,4 +212,3 @@ export function ActivityEditModal({
   );
 }
 
-// Made with Bob

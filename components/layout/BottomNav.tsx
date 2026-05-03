@@ -110,4 +110,3 @@ export function BottomNav(): React.ReactElement {
   );
 }
 
-// Made with Bob

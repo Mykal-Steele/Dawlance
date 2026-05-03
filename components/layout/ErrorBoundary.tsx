@@ -15,7 +15,7 @@ interface ErrorBoundaryState {
 /**
  * ErrorBoundary component that catches React errors and displays recovery UI
  * Uses ErrorState interface and errorMessages config from lib/types/error.ts
- * 
+ *
  * @example
  * <ErrorBoundary>
  *   <YourComponent />
@@ -28,7 +28,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    // Map error to ErrorState
     const errorType = ErrorBoundary.getErrorType(error);
 
     return {
@@ -52,40 +51,24 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    // Log error to console in development
     if (process.env.NODE_ENV === "development") {
       console.error("ErrorBoundary caught an error:", error, errorInfo);
     }
-
-    // In production, you would send this to an error tracking service like Sentry
-    // Example: Sentry.captureException(error, { contexts: { react: errorInfo } });
   }
 
-  /**
-   * Determine error type from error object
-   */
   private static getErrorType(error: Error): ErrorState["type"] {
-    // Network errors
     if (error.message.includes("fetch") || error.message.includes("network")) {
       return "network";
     }
-
-    // API errors
     if (error.message.includes("API") || error.message.includes("server")) {
       return "api";
     }
-
-    // Validation errors
     if (error.message.includes("validation") || error.message.includes("invalid")) {
       return "validation";
     }
-
     return "unknown";
   }
 
-  /**
-   * Reset error state and retry
-   */
   private handleReset = (): void => {
     this.setState({ error: null });
   };
@@ -95,21 +78,19 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     const { children, fallback } = this.props;
 
     if (error) {
-      // Use custom fallback if provided
       if (fallback) {
         return fallback(error, this.handleReset);
       }
 
-      // Default error UI
       const errorConfig = errorMessages[error.type];
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-neutral px-4">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
+        <div className="bg-neutral flex min-h-screen items-center justify-center px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-lg">
             {/* Error Icon */}
-            <div className="w-16 h-16 bg-tertiary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="bg-tertiary/10 mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full">
               <svg
-                className="w-8 h-8 text-tertiary"
+                className="text-tertiary h-8 w-8"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -124,15 +105,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             </div>
 
             {/* Error Title */}
-            <h2 className="text-2xl font-bold text-text mb-2">{errorConfig.title}</h2>
+            <h2 className="text-text mb-2 text-2xl font-bold">{errorConfig.title}</h2>
 
             {/* Error Message */}
             <p className="text-text/70 mb-6">{errorConfig.message}</p>
 
             {/* Error Details (Development Only) */}
             {process.env.NODE_ENV === "development" && error.message && (
-              <div className="bg-neutral rounded-lg p-4 mb-6 text-left">
-                <p className="text-xs font-mono text-text/60 break-all">{error.message}</p>
+              <div className="bg-neutral mb-6 rounded-lg p-4 text-left">
+                <p className="text-text/60 font-mono text-xs break-all">{error.message}</p>
               </div>
             )}
 
@@ -142,14 +123,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 <button
                   key={index}
                   onClick={option.action}
-                  className={`
-                    px-6 py-3 rounded-lg font-medium transition-colors
-                    ${
-                      index === 0
-                        ? "bg-primary text-white hover:bg-primary/90"
-                        : "bg-neutral text-text hover:bg-neutral/80"
-                    }
-                  `}
+                  className={`rounded-lg px-6 py-3 font-medium transition-colors ${
+                    index === 0
+                      ? "bg-primary hover:bg-primary/90 text-white"
+                      : "bg-neutral text-text hover:bg-neutral/80"
+                  } `}
                 >
                   {option.label}
                 </button>
@@ -163,5 +141,3 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return children;
   }
 }
-
-// Made with Bob

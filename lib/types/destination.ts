@@ -9,4 +9,3 @@ export interface DestinationData {
   endDate: Date;
 }
 
-// Made with Bob

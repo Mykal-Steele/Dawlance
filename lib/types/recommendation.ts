@@ -22,4 +22,3 @@ export interface Recommendation {
   tags: string[];
 }
 
-// Made with Bob

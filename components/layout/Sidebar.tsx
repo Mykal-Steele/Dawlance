@@ -201,4 +201,3 @@ export function Sidebar(): React.ReactElement {
   );
 }
 
-// Made with Bob

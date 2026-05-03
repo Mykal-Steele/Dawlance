@@ -14,38 +14,33 @@ interface SelectionStore {
 export const useSelectionStore = create<SelectionStore>()(
   persist(
     (set, get) => ({
-  selectedRecommendations: [],
-  
-  addSelection: (rec: Recommendation) =>
-    set((state) => {
-      // Prevent duplicates
-      if (state.selectedRecommendations.some((r) => r.id === rec.id)) {
-        return state;
-      }
-      return {
-        selectedRecommendations: [...state.selectedRecommendations, rec],
-      };
-    }),
-  
-  removeSelection: (id: string) =>
-    set((state) => ({
-      selectedRecommendations: state.selectedRecommendations.filter(
-        (rec) => rec.id !== id
-      ),
-    })),
-  
-  clearSelections: () => set({ selectedRecommendations: [] }),
-  
-  isSelected: (id: string) =>
-    get().selectedRecommendations.some((rec) => rec.id === id),
-  
-  getSelectionsByCategory: (category: string) =>
-    get().selectedRecommendations.filter((rec) => rec.category === category),
-}),
-  {
-    name: "dawlance-selection-storage",
-    version: 1,
-  }
-));
+      selectedRecommendations: [],
 
-// Made with Bob
+      addSelection: (rec: Recommendation) =>
+        set((state) => {
+          if (state.selectedRecommendations.some((r) => r.id === rec.id)) {
+            return state;
+          }
+          return {
+            selectedRecommendations: [...state.selectedRecommendations, rec],
+          };
+        }),
+
+      removeSelection: (id: string) =>
+        set((state) => ({
+          selectedRecommendations: state.selectedRecommendations.filter((rec) => rec.id !== id),
+        })),
+
+      clearSelections: () => set({ selectedRecommendations: [] }),
+
+      isSelected: (id: string) => get().selectedRecommendations.some((rec) => rec.id === id),
+
+      getSelectionsByCategory: (category: string) =>
+        get().selectedRecommendations.filter((rec) => rec.category === category),
+    }),
+    {
+      name: "dawlance-selection-storage",
+      version: 1,
+    }
+  )
+);

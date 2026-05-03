@@ -6,4 +6,3 @@ export { ActivityEditModal } from "./ActivityEditModal";
 export { EmptyActivitySlot } from "./EmptyActivitySlot";
 export { RouteMap } from "./RouteMap";
 
-// Made with Bob

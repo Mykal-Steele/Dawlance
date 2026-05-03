@@ -442,4 +442,3 @@ export default function LandingPage() {
   );
 }
 
-// Made with Bob

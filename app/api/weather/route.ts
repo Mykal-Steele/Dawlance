@@ -283,4 +283,3 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 }
 
-// Made with Bob

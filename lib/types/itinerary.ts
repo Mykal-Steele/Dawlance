@@ -38,4 +38,3 @@ export interface Activity {
   isUserAdded?: boolean; // true when user manually added via empty slot
 }
 
-// Made with Bob

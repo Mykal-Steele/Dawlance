@@ -22,13 +22,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "type and cost required" }, { status: 400 });
   }
 
-  // In production, persist to Cloudant analytics DB.
-  // For the hackathon scope, we log server-side and return 204.
   console.log(
     `[analytics] ${payload.type} | $${payload.cost.toFixed(4)} | user=${payload.userId ?? "anon"}`
   );
 
-  // Cost threshold alert (server-side log)
   if (payload.cost >= 5.0) {
     console.warn(`[analytics] COST ALERT: ${payload.userId ?? "anon"} exceeded $5 threshold`);
   }

@@ -4,4 +4,3 @@ export default function DiscoverPage() {
   return <DiscoveryPage />;
 }
 
-// Made with Bob

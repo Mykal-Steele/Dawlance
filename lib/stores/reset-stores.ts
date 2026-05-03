@@ -15,4 +15,3 @@ export function resetAllStores(): void {
   useAIStore.getState().clearHistory();
 }
 
-// Made with Bob

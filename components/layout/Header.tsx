@@ -84,4 +84,3 @@ export function Header(): React.ReactElement {
   );
 }
 
-// Made with Bob

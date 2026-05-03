@@ -27,4 +27,3 @@ export function WeatherForecast({ forecasts, location }: WeatherForecastProps) {
   );
 }
 
-// Made with Bob

@@ -27,4 +27,3 @@ export interface ClothingItem {
   warning?: string;
 }
 
-// Made with Bob

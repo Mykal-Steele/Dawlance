@@ -207,7 +207,6 @@ export function DiscoveryPage() {
   );
 
   const handleAutoSelect = useCallback(() => {
-    // Clear current phase selections
     selectedRecommendations
       .filter((r) => r.category === phase)
       .forEach((r) => removeSelection(r.id));
@@ -625,5 +624,3 @@ export function DiscoveryPage() {
     </div>
   );
 }
-
-// Made with Bob

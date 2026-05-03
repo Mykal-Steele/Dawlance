@@ -187,4 +187,3 @@ export const RecommendationCard = React.memo(
 );
 RecommendationCard.displayName = "RecommendationCard";
 
-// Made with Bob
