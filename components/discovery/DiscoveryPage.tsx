@@ -186,7 +186,7 @@ export function DiscoveryPage() {
   );
 
   const phaseSelectedCount = selectedRecommendations.filter((r) => r.category === phase).length;
-  const canGoNext = phaseSelectedCount >= phaseConfig.min;
+  const canGoNext = true;
 
   // Overall validation (used on last phase)
   const validation = useMemo(() => {
@@ -367,7 +367,7 @@ export function DiscoveryPage() {
                 {phaseConfig.label === "Hotel" ? "a" : "your"} {phaseConfig.label}
               </h2>
               <p className="mt-0.5 text-sm text-gray-500">
-                Select at least {phaseConfig.min} {phaseConfig.plural} for your trip
+                Pick {phaseConfig.plural} for your trip
               </p>
             </div>
             <button
@@ -553,21 +553,10 @@ export function DiscoveryPage() {
               <span className={`font-semibold ${canGoNext ? "text-[#6DD3B0]" : "text-gray-700"}`}>
                 {phaseConfig.icon} {phaseConfig.label}:{" "}
               </span>
-              <span className="text-gray-600">
-                {phaseSelectedCount} / {phaseConfig.min} minimum selected
-              </span>
-              {canGoNext && (
-                <svg className="h-4 w-4 text-[#6DD3B0]" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              )}
+              <span className="text-gray-600">{phaseSelectedCount} selected</span>
             </div>
-            {!phaseConfig.next && validation.errors.length > 0 && (
-              <p className="text-xs text-[#FF8C42]">{validation.errors[0]}</p>
+            {!phaseConfig.next && validation.warnings.length > 0 && (
+              <p className="text-xs text-[#FF8C42]">{validation.warnings[0]}</p>
             )}
           </div>
 
@@ -610,11 +599,11 @@ export function DiscoveryPage() {
               </button>
             ) : (
               <Link
-                href={validation.valid ? "/plan/itinerary" : "#"}
-                onClick={(e) => !validation.valid && e.preventDefault()}
+                href={selectedRecommendations.length > 0 ? "/plan/itinerary" : "#"}
+                onClick={(e) => selectedRecommendations.length === 0 && e.preventDefault()}
                 className={[
                   "flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-sm transition-all",
-                  validation.valid
+                  selectedRecommendations.length > 0
                     ? "bg-[#6DD3B0] text-white hover:bg-[#5bc4a1]"
                     : "cursor-not-allowed bg-gray-200 text-gray-400",
                 ].join(" ")}

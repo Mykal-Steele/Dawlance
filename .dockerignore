@@ -1,0 +1,13 @@
+.git
+.next
+node_modules
+.env
+.env.local
+*.pdf
+.bob
+.agents
+.claude
+.storybook
+*.md
+vitest.config.ts
+tsconfig.tsbuildinfo

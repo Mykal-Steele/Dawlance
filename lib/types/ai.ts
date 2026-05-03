@@ -18,9 +18,24 @@ export interface AIAction {
     | "remove_activity"
     | "adjust_time"
     | "suggest_alternative"
-    | "find_nearby";
+    | "find_nearby"
+    | "fill_slot";
   payload: unknown;
   label: string;
+}
+
+export interface FillSlotPayload {
+  dayIndex: number;
+  slotId: string;
+  place: {
+    name: string;
+    address: string;
+    coordinates: { lat: number; lng: number };
+    type: "attraction" | "meal" | "rest";
+    duration?: number;
+    culturalContext?: string;
+    attireSuggestion?: string;
+  };
 }
 
 // Made with Bob

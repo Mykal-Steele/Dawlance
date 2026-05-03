@@ -18,8 +18,8 @@ export type { Itinerary, DayPlan, Activity } from "./itinerary";
 // Weather
 export type { WeatherData, DailyForecast, ClothingItem } from "./weather";
 
-// AI Assistant
-export type { AIMessage, AIAction } from "./ai";
+// AI assistant
+export type { AIMessage, AIAction, FillSlotPayload } from "./ai";
 
 // Error handling
 export type { ErrorState, RecoveryOption } from "./error";

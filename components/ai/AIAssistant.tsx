@@ -6,7 +6,7 @@ import { useAIStore } from "@/lib/stores/ai-store";
 import { useItineraryStore } from "@/lib/stores/itinerary-store";
 import { useFormStore } from "@/lib/stores/form-store";
 import { sendChatMessage, type AIChatContext } from "@/lib/api/ai";
-import type { AIAction } from "@/lib/types";
+import type { AIAction, FillSlotPayload } from "@/lib/types";
 import { AIChat } from "./AIChat";
 import { AIQuickActions } from "./AIQuickActions";
 import { AIInput } from "./AIInput";
@@ -19,9 +19,8 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
   const [isOpen, setIsOpen] = useState(true);
   const [streamingText, setStreamingText] = useState("");
 
-  const { messages, isTyping, currentInteractionId, addMessage, setTyping, setInteractionId } =
-    useAIStore();
-  const { itinerary, editActivity } = useItineraryStore();
+  const { messages, isTyping, addMessage, setTyping } = useAIStore();
+  const { itinerary, editActivity, fillEmptySlot, addActivity } = useItineraryStore();
   const { destination, preferences, startDate, endDate, travelers } = useFormStore();
 
   // Build context from store state
@@ -44,7 +43,11 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
         {
           message: userMessage,
           context: buildContext(),
-          previousInteractionId: currentInteractionId,
+          // Pass last 20 turns as context for watsonx multi-turn
+          conversationHistory: messages
+            .filter((m) => m.role === "user" || m.role === "assistant")
+            .slice(-20)
+            .map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
         },
         (chunk) => setStreamingText((prev) => prev + chunk)
       );
@@ -60,9 +63,6 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
         suggestions: response.suggestions,
         actions: response.actions,
       });
-      if (response.interactionId) {
-        setInteractionId(response.interactionId);
-      }
       setTyping(false);
       setStreamingText("");
     },
@@ -96,11 +96,32 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
   }
 
   function handleSuggestionClick(suggestion: string): void {
+    if (suggestion === "Fill my open slots" && itinerary) {
+      // Build an explicit message so the model knows exactly which slot IDs to use
+      const emptySlots: { dayIndex: number; date: string; id: string; time: string }[] = [];
+      itinerary.days.forEach((day, dIdx) => {
+        day.activities.forEach((act) => {
+          if (act.type === "empty") {
+            emptySlots.push({ dayIndex: dIdx, date: day.date, id: act.id, time: act.time });
+          }
+        });
+      });
+      if (emptySlots.length === 0) {
+        handleSend("There are no empty slots to fill.");
+        return;
+      }
+      const slotList = emptySlots
+        .map((s) => `  - Day ${s.dayIndex} (${s.date}), slotId="${s.id}", time=${s.time}`)
+        .join("\n");
+      handleSend(
+        `Fill all my open slots with real places in ${itinerary.destination}. Here are the exact slots to fill:\n${slotList}\n\nFor EVERY slot above, output a fill_slot action using the exact slotId shown. One action per slot.`
+      );
+      return;
+    }
     handleSend(suggestion);
   }
 
   function handleActionClick(action: AIAction): void {
-    // Wire AI actions to ItineraryStore updates
     if (action.type === "adjust_time") {
       const payload = action.payload as {
         dayIndex?: number;
@@ -115,25 +136,132 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
       ) {
         editActivity(payload.dayIndex, payload.activityIndex, { time: payload.time });
       }
+      return;
     }
-    // For other action types, send a follow-up chat message describing the intent
+
+    if (action.type === "fill_slot") {
+      const payload = action.payload as FillSlotPayload | null;
+      if (
+        payload &&
+        typeof payload.dayIndex === "number" &&
+        typeof payload.slotId === "string" &&
+        payload.place
+      ) {
+        const { place, dayIndex, slotId } = payload;
+        fillEmptySlot(dayIndex, slotId, {
+          id: slotId,
+          time: "", // will be inferred from slot position
+          duration: place.duration ?? 90,
+          type: place.type,
+          isUserAdded: false,
+          recommendation: {
+            id: `ai-fill-${Date.now()}`,
+            name: place.name,
+            description: place.address,
+            category: place.type === "meal" ? "restaurant" : "attraction",
+            estimatedDuration: place.duration ?? 90,
+            priceRange: 2,
+            location: {
+              address: place.address,
+              coordinates: place.coordinates,
+            },
+            openingHours: "",
+            culturalNotes: place.culturalContext ?? "",
+            imageUrl: "",
+            tags: [],
+          },
+          culturalContext: place.culturalContext ?? "",
+          attireSuggestion: place.attireSuggestion ?? "",
+        });
+
+        // When there are still more empty slots on that day, offer to fill them
+        const remainingEmpty =
+          itinerary?.days[dayIndex]?.activities.filter((a) => a.type === "empty" && a.id !== slotId)
+            .length ?? 0;
+
+        if (remainingEmpty > 0) {
+          addMessage({
+            id: `ai-fill-confirm-${Date.now()}`,
+            role: "assistant",
+            content: `Done! Added ${place.name}. There are still ${remainingEmpty} open slot${remainingEmpty > 1 ? "s" : ""} on that day — want me to fill them too?`,
+            timestamp: new Date().toISOString(),
+            suggestions: ["Fill the remaining slots", "Leave them open"],
+          });
+        } else {
+          addMessage({
+            id: `ai-fill-confirm-${Date.now()}`,
+            role: "assistant",
+            content: `Added ${place.name} to your plan.`,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+      return;
+    }
+
+    if (action.type === "add_activity") {
+      const payload = action.payload as FillSlotPayload | null;
+      if (payload && typeof payload.dayIndex === "number" && payload.place) {
+        const { place, dayIndex } = payload;
+        addActivity(dayIndex, -1, {
+          id: `ai-added-${Date.now()}`,
+          time: "",
+          duration: place.duration ?? 90,
+          type: place.type,
+          isUserAdded: false,
+          recommendation: {
+            id: `ai-add-${Date.now()}`,
+            name: place.name,
+            description: place.address,
+            category: place.type === "meal" ? "restaurant" : "attraction",
+            estimatedDuration: place.duration ?? 90,
+            priceRange: 2,
+            location: {
+              address: place.address,
+              coordinates: place.coordinates,
+            },
+            openingHours: "",
+            culturalNotes: place.culturalContext ?? "",
+            imageUrl: "",
+            tags: [],
+          },
+          culturalContext: place.culturalContext ?? "",
+          attireSuggestion: place.attireSuggestion ?? "",
+        });
+      }
+      return;
+    }
+
+    // For remaining action types, send a follow-up chat message
     handleSend(action.label);
   }
 
   // Proactive greeting on itinerary load
   useEffect(() => {
     if (currentStep === "itinerary" && itinerary && messages.length === 0) {
-      const days = itinerary.days;
-      let proactiveMsg = `Looks like a great plan for ${itinerary.destination}! 🎉`;
+      const allActivities = itinerary.days.flatMap((d) => d.activities);
+      const emptyCount = allActivities.filter((a) => a.type === "empty").length;
 
-      // Find a gap between activities to suggest a cafe
-      if (days[0]?.activities?.length >= 2) {
-        const first = days[0].activities[0];
-        const second = days[0].activities[1];
-        proactiveMsg += ` I noticed you have some time between "${first.recommendation.name}" and "${second.recommendation.name}". Want me to find a cozy cafe nearby?`;
+      let proactiveMsg: string;
+      let suggestions: string[];
+
+      if (emptyCount > 0) {
+        proactiveMsg = `Your plan for ${itinerary.destination} is ready! There are ${emptyCount} open slot${emptyCount > 1 ? "s" : ""} — you can fill them yourself or just tell me what you'd like to do and I'll add it in.`;
+        suggestions = [
+          "Fill my open slots",
+          "What do you suggest for free time?",
+          "Tell me about the culture",
+        ];
       } else {
-        proactiveMsg +=
-          " I'm here to help with any questions, suggest alternatives, or optimize your route. What would you like to know?";
+        const days = itinerary.days;
+        if (days[0]?.activities?.length >= 2) {
+          const first = days[0].activities[0];
+          const second = days[0].activities[1];
+          proactiveMsg = `Looks like a great plan for ${itinerary.destination}! I noticed you have some time between "${first?.recommendation.name}" and "${second?.recommendation.name}". Want me to find something nearby?`;
+        } else {
+          proactiveMsg = `Looks like a great plan for ${itinerary.destination}! I'm here to help with any questions, suggest alternatives, or fill in any gaps.`;
+        }
+        suggestions = ["Find something nearby", "Optimize my route", "Tell me about the culture"];
       }
 
       addMessage({
@@ -141,7 +269,7 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
         role: "assistant",
         content: proactiveMsg,
         timestamp: new Date().toISOString(),
-        suggestions: ["Find a nearby cafe", "Optimize my route", "Tell me about the culture"],
+        suggestions,
       });
     }
     // Run only when itinerary is first loaded
@@ -375,7 +503,7 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
           <AIChat
             messages={messages}
             isTyping={isTyping}
-            streamingText={streamingText}
+            streamingText={streamingText.replace(/\n?---ACTIONS---[\s\S]*$/, "").trimEnd()}
             onSuggestionClick={handleSuggestionClick}
             onActionClick={handleActionClick}
           />

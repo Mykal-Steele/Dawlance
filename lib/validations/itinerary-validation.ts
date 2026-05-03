@@ -3,6 +3,7 @@ import type { Recommendation } from "@/lib/types";
 export interface ValidationResult {
   valid: boolean;
   errors: string[];
+  warnings: string[];
 }
 
 const EARTH_RADIUS_KM = 6371;
@@ -69,30 +70,34 @@ export function validateSelections(
   startDate: Date | string,
   endDate: Date | string
 ): ValidationResult {
-  const errors: string[] = [];
+  if (selected.length === 0) {
+    return { valid: false, errors: ["Select at least one place"], warnings: [] };
+  }
+
+  const warnings: string[] = [];
   const start = new Date(startDate);
   const end = new Date(endDate);
 
-  // Category balance
+  // Category balance (soft warnings — not all cities have enough options)
   const hotels = selected.filter((r) => r.category === "hotel");
   const attractions = selected.filter((r) => r.category === "attraction");
   const restaurants = selected.filter((r) => r.category === "restaurant");
 
   if (hotels.length < MIN_HOTELS) {
-    errors.push(`Select at least ${MIN_HOTELS} hotel`);
+    warnings.push(`No hotel selected — consider adding one`);
   }
   if (attractions.length < MIN_ATTRACTIONS) {
-    errors.push(
-      `Select at least ${MIN_ATTRACTIONS} attractions (currently have ${attractions.length})`
+    warnings.push(
+      `Only ${attractions.length} attraction${attractions.length === 1 ? "" : "s"} selected (recommended: ${MIN_ATTRACTIONS}+)`
     );
   }
   if (restaurants.length < MIN_RESTAURANTS) {
-    errors.push(
-      `Select at least ${MIN_RESTAURANTS} restaurants (currently have ${restaurants.length})`
+    warnings.push(
+      `Only ${restaurants.length} restaurant${restaurants.length === 1 ? "" : "s"} selected (recommended: ${MIN_RESTAURANTS}+)`
     );
   }
 
-  // Time feasibility — exclude hotel stays from duration total
+  // Time feasibility — soft warning
   const tripHours = Math.max(0, (end.getTime() - start.getTime()) / (1000 * 60 * 60));
   const maxMinutes = tripHours * 60 * TIME_UTILIZATION_LIMIT;
   const totalMinutes = selected
@@ -101,23 +106,23 @@ export function validateSelections(
 
   if (totalMinutes > maxMinutes) {
     const overByHours = Math.ceil((totalMinutes - maxMinutes) / 60);
-    errors.push(`Too many activities — reduce by at least ${overByHours}h to fit the trip`);
+    warnings.push(`Schedule may be tight — over capacity by ~${overByHours}h`);
   }
 
-  // Geographic feasibility: max 300km between any two selected locations
+  // Geographic feasibility — soft warning
   outer: for (let i = 0; i < selected.length; i++) {
     for (let j = i + 1; j < selected.length; j++) {
       const a = selected[i].location.coordinates;
       const b = selected[j].location.coordinates;
       const dist = haversineDistance(a.lat, a.lng, b.lat, b.lng);
       if (dist > MAX_DISTANCE_KM) {
-        errors.push(
-          `"${selected[i].name}" and "${selected[j].name}" are ${Math.round(dist)}km apart — too far for one trip`
+        warnings.push(
+          `"${selected[i].name}" and "${selected[j].name}" are ${Math.round(dist)}km apart`
         );
         break outer;
       }
     }
   }
 
-  return { valid: errors.length === 0, errors };
+  return { valid: true, errors: [], warnings };
 }

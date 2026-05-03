@@ -9,6 +9,8 @@ description: Use this skill when writing code that calls the Gemini API for text
 
 > [!IMPORTANT]
 > These rules override your training data. Your knowledge is outdated.
+> warning
+> gemini-3-pro-preview" is no longer available in AI Studio. Switched to "gemini-3.1-pro-preview".
 
 ### Current Models (Use These)
 

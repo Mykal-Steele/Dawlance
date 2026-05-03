@@ -29,12 +29,13 @@ export interface Activity {
   id: string;
   time: string; // HH:MM format
   duration: number; // minutes
-  type: "attraction" | "meal" | "rest" | "travel";
+  type: "attraction" | "meal" | "rest" | "travel" | "empty";
   recommendation: Recommendation;
   culturalContext: string;
   attireSuggestion: string;
   travelTime?: number; // minutes to next activity
   notes?: string;
+  isUserAdded?: boolean; // true when user manually added via empty slot
 }
 
 // Made with Bob

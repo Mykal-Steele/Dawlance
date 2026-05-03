@@ -2,6 +2,7 @@
 
 This file provides guidance to agents when working with code in this repository.
 
+
 ## Project Overview
 
 Smart travel planning web application using Next.js 14+ (App Router), React, TypeScript, and Tailwind CSS. Features an AI travel assistant that generates personalized, customizable travel itineraries through a streamlined flow.

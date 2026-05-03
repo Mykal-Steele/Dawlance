@@ -148,6 +148,8 @@ If no MCP documentation tools are available, fetch from the official docs:
 **Index URL**: `https://ai.google.dev/gemini-api/docs/llms.txt`
 
 This index contains links to all documentation pages in .md.txt format. Use web fetch tools to:
+warning
+gemini-3-pro-preview" is no longer available in AI Studio. Switched to "gemini-3.1-pro-preview".
 
 1. Fetch `llms.txt` to discover available pages
 2. Fetch specific pages (e.g., `https://ai.google.dev/gemini-api/docs/function-calling.md.txt`)

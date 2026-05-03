@@ -9,6 +9,12 @@ interface ItineraryStore {
   canRedo: boolean;
   updateItinerary: (itinerary: Itinerary | null) => void;
   editActivity: (dayIndex: number, activityIndex: number, changes: Partial<Activity>) => void;
+  reorderActivities: (dayIndex: number, fromIndex: number, toIndex: number) => void;
+  removeActivity: (dayIndex: number, activityIndex: number) => void;
+  /** Insert a new activity at the given position in a day (or append if activityIndex === -1) */
+  addActivity: (dayIndex: number, activityIndex: number, activity: Activity) => void;
+  /** Replace an empty-type slot by id with a filled activity */
+  fillEmptySlot: (dayIndex: number, slotId: string, activity: Activity) => void;
   undo: () => void;
   redo: () => void;
 }
@@ -75,6 +81,142 @@ export const useItineraryStore = create<ItineraryStore>((set, _get) => ({
         -MAX_HISTORY
       );
 
+      const newIndex = newHistory.length - 1;
+
+      return {
+        itinerary: newItinerary,
+        history: newHistory,
+        historyIndex: newIndex,
+        canUndo: newIndex > 0,
+        canRedo: false,
+      };
+    }),
+
+  reorderActivities: (dayIndex: number, fromIndex: number, toIndex: number) =>
+    set((state) => {
+      if (!state.itinerary) return state;
+      if (fromIndex === toIndex) return state;
+
+      const newDays = state.itinerary.days.map((day, dIdx) => {
+        if (dIdx !== dayIndex) return day;
+        const acts = [...day.activities];
+        const [moved] = acts.splice(fromIndex, 1);
+        if (moved) acts.splice(toIndex, 0, moved);
+        return { ...day, activities: acts };
+      });
+
+      const newItinerary = {
+        ...state.itinerary,
+        days: newDays,
+        metadata: { ...state.itinerary.metadata, updatedAt: new Date().toISOString() },
+      };
+
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), newItinerary].slice(
+        -MAX_HISTORY
+      );
+      const newIndex = newHistory.length - 1;
+
+      return {
+        itinerary: newItinerary,
+        history: newHistory,
+        historyIndex: newIndex,
+        canUndo: newIndex > 0,
+        canRedo: false,
+      };
+    }),
+
+  removeActivity: (dayIndex: number, activityIndex: number) =>
+    set((state) => {
+      if (!state.itinerary) return state;
+
+      const newDays = state.itinerary.days.map((day, dIdx) => {
+        if (dIdx !== dayIndex) return day;
+        return {
+          ...day,
+          activities: day.activities.filter((_, aIdx) => aIdx !== activityIndex),
+        };
+      });
+
+      const newItinerary = {
+        ...state.itinerary,
+        days: newDays,
+        metadata: { ...state.itinerary.metadata, updatedAt: new Date().toISOString() },
+      };
+
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), newItinerary].slice(
+        -MAX_HISTORY
+      );
+      const newIndex = newHistory.length - 1;
+
+      return {
+        itinerary: newItinerary,
+        history: newHistory,
+        historyIndex: newIndex,
+        canUndo: newIndex > 0,
+        canRedo: false,
+      };
+    }),
+
+  addActivity: (dayIndex: number, activityIndex: number, activity: Activity) =>
+    set((state) => {
+      if (!state.itinerary) return state;
+      if (dayIndex < 0 || dayIndex >= state.itinerary.days.length) return state;
+
+      const newDays = state.itinerary.days.map((day, dIdx) => {
+        if (dIdx !== dayIndex) return day;
+        const acts = [...day.activities];
+        if (activityIndex === -1 || activityIndex >= acts.length) {
+          acts.push(activity);
+        } else {
+          acts.splice(activityIndex, 0, activity);
+        }
+        return { ...day, activities: acts };
+      });
+
+      const newItinerary = {
+        ...state.itinerary,
+        days: newDays,
+        metadata: { ...state.itinerary.metadata, updatedAt: new Date().toISOString() },
+      };
+
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), newItinerary].slice(
+        -MAX_HISTORY
+      );
+      const newIndex = newHistory.length - 1;
+
+      return {
+        itinerary: newItinerary,
+        history: newHistory,
+        historyIndex: newIndex,
+        canUndo: newIndex > 0,
+        canRedo: false,
+      };
+    }),
+
+  fillEmptySlot: (dayIndex: number, slotId: string, activity: Activity) =>
+    set((state) => {
+      if (!state.itinerary) return state;
+      if (dayIndex < 0 || dayIndex >= state.itinerary.days.length) return state;
+
+      const newDays = state.itinerary.days.map((day, dIdx) => {
+        if (dIdx !== dayIndex) return day;
+        return {
+          ...day,
+          activities: day.activities.map((act) =>
+            act.id === slotId ? { ...activity, id: slotId } : act
+          ),
+        };
+      });
+
+      const newItinerary = {
+        ...state.itinerary,
+        days: newDays,
+        metadata: { ...state.itinerary.metadata, updatedAt: new Date().toISOString() },
+      };
+
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), newItinerary].slice(
+        -MAX_HISTORY
+      );
       const newIndex = newHistory.length - 1;
 
       return {

@@ -14,12 +14,11 @@ export interface AIChatContext {
 export interface AIChatRequest {
   message: string;
   context: AIChatContext;
-  previousInteractionId?: string;
+  conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>;
 }
 
 export interface AIChatResponse {
   message: string;
-  interactionId: string;
   suggestions?: string[];
   actions?: Array<{
     type:
@@ -27,7 +26,8 @@ export interface AIChatResponse {
       | "remove_activity"
       | "adjust_time"
       | "suggest_alternative"
-      | "find_nearby";
+      | "find_nearby"
+      | "fill_slot";
     payload: unknown;
     label: string;
   }>;
@@ -55,7 +55,7 @@ export async function sendChatMessage(
   const decoder = new TextDecoder();
   let buffer = "";
   let fullMessage = "";
-  let interactionId = "";
+  let parsedActions: AIChatResponse["actions"];
 
   while (true) {
     const { done, value } = await reader.read();
@@ -81,7 +81,18 @@ export async function sendChatMessage(
         fullMessage += event.text;
         onChunk(event.text);
       } else if (event.type === "done") {
-        interactionId = typeof event.interactionId === "string" ? event.interactionId : "";
+        // Use server's clean version (actions block stripped) when available
+        if (typeof event.cleanText === "string" && event.cleanText.trim()) {
+          fullMessage = event.cleanText.trim();
+        } else {
+          // Safety: strip actions block from client-side accumulated text too
+          const markerIdx = fullMessage.search(/\n?---ACTIONS---/);
+          if (markerIdx !== -1) fullMessage = fullMessage.slice(0, markerIdx).trim();
+        }
+        // Attach parsed actions from server
+        if (Array.isArray(event.actions) && event.actions.length > 0) {
+          parsedActions = event.actions as AIChatResponse["actions"];
+        }
       } else if (event.type === "error") {
         throw new Error(typeof event.message === "string" ? event.message : "AI error");
       }
@@ -89,7 +100,7 @@ export async function sendChatMessage(
   }
 
   return {
-    message: fullMessage,
-    interactionId,
+    message: fullMessage.trim() || "Done! I've updated your plan.",
+    actions: parsedActions,
   };
 }
