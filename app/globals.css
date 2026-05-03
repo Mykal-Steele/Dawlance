@@ -254,4 +254,45 @@ html {
   outline-offset: 2px;
 }
 
+/* ─── Print / PDF export ──────────────────────────────────────────────────── */
+@media print {
+  /* Hide everything via visibility (preserves layout tree, unlike display:none) */
+  body[data-printing="itinerary"] * {
+    visibility: hidden;
+  }
+
+  /* Reveal only the export root and its descendants */
+  body[data-printing="itinerary"] #itinerary-export-root,
+  body[data-printing="itinerary"] #itinerary-export-root * {
+    visibility: visible;
+  }
+
+  /* Position it at the top of the page */
+  body[data-printing="itinerary"] #itinerary-export-root {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    /* Collapse the side-by-side map grid to single column */
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Preserve background colors / images */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide the map panel (second child of the grid) and buttons */
+  body[data-printing="itinerary"] #itinerary-export-root > *:nth-child(2) {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  button,
+  [role="menu"] {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
 /* Made with Bob */

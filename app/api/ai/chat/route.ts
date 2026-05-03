@@ -272,26 +272,34 @@ export async function POST(request: NextRequest): Promise<Response> {
         }
 
         // Fallback: synthesize a message when cleanText is empty but actions exist
-        if (markerMatch && !cleanText && parsedActions?.length) {
-          const first = parsedActions[0] as {
-            type?: string;
-            payload?: { place?: { name?: string; address?: string } };
-          };
-          const placeName = first?.payload?.place?.name;
-          const placeAddress = first?.payload?.place?.address;
-          const locationHint = placeAddress ? ` (${placeAddress})` : "";
-          if (first?.type === "fill_slot" && placeName) {
-            cleanText = `Added ${placeName}${locationHint} to your plan.`;
-          } else if (first?.type === "add_activity" && placeName) {
-            cleanText = `Added ${placeName}${locationHint} to your itinerary.`;
+        if (markerMatch && !cleanText) {
+          if (parsedActions?.length) {
+            const first = parsedActions[0] as {
+              type?: string;
+              payload?: { place?: { name?: string; address?: string } };
+            };
+            const placeName = first?.payload?.place?.name;
+            const placeAddress = first?.payload?.place?.address;
+            const locationHint = placeAddress ? ` (${placeAddress})` : "";
+            if (first?.type === "fill_slot" && placeName) {
+              cleanText = `Added ${placeName}${locationHint} to your plan.`;
+            } else if (first?.type === "add_activity" && placeName) {
+              cleanText = `Added ${placeName}${locationHint} to your itinerary.`;
+            } else {
+              cleanText = "Done.";
+            }
           } else {
-            cleanText = "Added it to your plan.";
+            // Model returned ---ACTIONS--- with no text and no valid actions — discard the marker
+            cleanText = undefined;
           }
         }
 
+        // Never send cleanText as an empty string — omit it so the client keeps accumulated deltas
+        const cleanTextToSend = cleanText && cleanText.trim() ? cleanText : undefined;
+
         send({
           type: "done",
-          ...(cleanText !== undefined ? { cleanText } : {}),
+          ...(cleanTextToSend !== undefined ? { cleanText: cleanTextToSend } : {}),
           ...(parsedActions !== undefined ? { actions: parsedActions } : {}),
         });
       } catch (error) {

@@ -1,17 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getItinerary } from "@/lib/utils/cloudant";
+import { getItinerary, saveShareToken, getShareToken } from "@/lib/utils/cloudant";
 import type { Itinerary } from "@/lib/types";
 
-// Simple in-memory share store — replaced by Cloudant in production.
-// For hackathon scope this is sufficient (ephemeral, server-side).
-const shareStore = new Map<string, { planId: string; itinerary: Itinerary; expiresAt: number }>();
-
 function generateToken(): string {
-  // Use crypto.randomUUID when available (Node 15+), fall back to a hex approach
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
   }
-  // Fallback: 32 random hex chars
   const arr = new Uint8Array(16);
   crypto.getRandomValues(arr);
   return Array.from(arr, (b) => b.toString(16).padStart(2, "0")).join("");
@@ -48,8 +42,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const token = generateToken();
-  const expiresAt = Date.now() + TTL_MS;
-  shareStore.set(token, { planId: resolvedItinerary.id, itinerary: resolvedItinerary, expiresAt });
+
+  try {
+    await saveShareToken(token, resolvedItinerary, TTL_MS);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[POST /api/plans/share]", msg);
+    return NextResponse.json({ error: "Failed to create share link" }, { status: 500 });
+  }
 
   const baseUrl = request.nextUrl.origin;
   const shareUrl = `${baseUrl}/share/${token}`;
@@ -64,15 +64,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "token required" }, { status: 400 });
   }
 
-  const entry = shareStore.get(token);
-  if (!entry) {
-    return NextResponse.json({ error: "Share link not found or expired" }, { status: 404 });
+  try {
+    const itinerary = await getShareToken(token);
+    if (!itinerary) {
+      return NextResponse.json({ error: "Share link not found or expired" }, { status: 404 });
+    }
+    return NextResponse.json({ itinerary });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[GET /api/plans/share]", msg);
+    return NextResponse.json({ error: "Failed to retrieve share link" }, { status: 500 });
   }
-
-  if (Date.now() > entry.expiresAt) {
-    shareStore.delete(token);
-    return NextResponse.json({ error: "Share link has expired" }, { status: 410 });
-  }
-
-  return NextResponse.json({ itinerary: entry.itinerary });
 }

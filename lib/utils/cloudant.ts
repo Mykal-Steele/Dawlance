@@ -156,7 +156,7 @@ export async function listItineraries(): Promise<PlanSummary[]> {
   };
 
   return data.rows
-    .filter((row) => !row.id.startsWith("_design/"))
+    .filter((row) => !row.id.startsWith("_design/") && !row.id.startsWith("share-"))
     .map((row) => ({
       id: row.id,
       rev: row.value.rev,
@@ -183,4 +183,59 @@ export async function deleteItinerary(id: string, rev: string): Promise<void> {
       `Cloudant delete failed [${res.status}]: ${data.error ?? "unknown"} — ${data.reason ?? ""}`
     );
   }
+}
+
+// ─── Share tokens ─────────────────────────────────────────────────────────────
+
+interface ShareDoc {
+  _id: string;
+  type: "share-token";
+  itinerary: Itinerary;
+  expiresAt: number;
+}
+
+/** Persist a share token → itinerary mapping in Cloudant. */
+export async function saveShareToken(token: string, itinerary: Itinerary, ttlMs: number): Promise<void> {
+  const authToken = await getToken();
+  const docId = `share-${token}`;
+  const body: ShareDoc = {
+    _id: docId,
+    type: "share-token",
+    itinerary,
+    expiresAt: Date.now() + ttlMs,
+  };
+
+  const res = await fetch(`${dbUrl()}/${encodeURIComponent(docId)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const data = (await res.json()) as { error?: string; reason?: string };
+    throw new Error(`Cloudant save share token failed [${res.status}]: ${data.error ?? "unknown"} — ${data.reason ?? ""}`);
+  }
+}
+
+/** Retrieve a share token entry. Returns null if missing or expired. */
+export async function getShareToken(token: string): Promise<Itinerary | null> {
+  const authToken = await getToken();
+  const docId = `share-${token}`;
+
+  const res = await fetch(`${dbUrl()}/${encodeURIComponent(docId)}`, {
+    headers: { Authorization: `Bearer ${authToken}` },
+  });
+
+  if (res.status === 404) return null;
+
+  if (!res.ok) {
+    const data = (await res.json()) as { error?: string };
+    throw new Error(`Cloudant get share token failed [${res.status}]: ${data.error ?? "unknown"}`);
+  }
+
+  const doc = (await res.json()) as ShareDoc;
+
+  if (Date.now() > doc.expiresAt) return null;
+
+  return doc.itinerary;
 }

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { Itinerary, Activity } from "@/lib/types";
 
 interface ItineraryStore {
@@ -27,7 +28,9 @@ interface ItineraryStore {
 
 const MAX_HISTORY = 50;
 
-export const useItineraryStore = create<ItineraryStore>((set, _get) => ({
+export const useItineraryStore = create<ItineraryStore>()(
+  persist(
+    (set, _get) => ({
   itinerary: null,
   history: [],
   historyIndex: -1,
@@ -272,6 +275,12 @@ export const useItineraryStore = create<ItineraryStore>((set, _get) => ({
         canRedo: newIndex < state.history.length - 1,
       };
     }),
-}));
+}),
+  {
+    name: "dawlance-itinerary-storage",
+    version: 1,
+    partialize: (state) => ({ itinerary: state.itinerary }),
+  }
+));
 
 // Made with Bob

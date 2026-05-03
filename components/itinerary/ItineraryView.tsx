@@ -201,9 +201,13 @@ export function ItineraryView({
   } = useMutation({
     mutationFn: generateItinerary,
     onSuccess: (data) => {
+      toast.dismiss("gen-itinerary");
       updateItinerary(data.itinerary);
       // Auto-save newly generated itinerary to Cloudant
       void handleSaveToCloudant(data.itinerary);
+    },
+    onError: () => {
+      toast.dismiss("gen-itinerary");
     },
   });
 

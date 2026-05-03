@@ -178,7 +178,9 @@ export function PreferencesForm() {
                     id={name}
                     type="time"
                     className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-black focus:border-[#2A7BFF] focus:outline-none focus:ring-2 focus:ring-[#2A7BFF]/20"
-                    {...register(name)}
+                    {...register(name, {
+                      setValueAs: (v: string) => (v === "" ? undefined : v),
+                    })}
                   />
                 </div>
               ))}

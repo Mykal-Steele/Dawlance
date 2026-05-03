@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { Recommendation } from "@/lib/types";
 
 interface SelectionStore {
@@ -10,7 +11,9 @@ interface SelectionStore {
   getSelectionsByCategory: (category: string) => Recommendation[];
 }
 
-export const useSelectionStore = create<SelectionStore>((set, get) => ({
+export const useSelectionStore = create<SelectionStore>()(
+  persist(
+    (set, get) => ({
   selectedRecommendations: [],
   
   addSelection: (rec: Recommendation) =>
@@ -38,6 +41,11 @@ export const useSelectionStore = create<SelectionStore>((set, get) => ({
   
   getSelectionsByCategory: (category: string) =>
     get().selectedRecommendations.filter((rec) => rec.category === category),
-}));
+}),
+  {
+    name: "dawlance-selection-storage",
+    version: 1,
+  }
+));
 
 // Made with Bob

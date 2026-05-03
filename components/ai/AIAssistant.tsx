@@ -252,45 +252,8 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
     handleSend(action.label);
   }
 
-  // Proactive greeting on itinerary load
-  useEffect(() => {
-    if (currentStep === "itinerary" && itinerary && messages.length === 0) {
-      const allActivities = itinerary.days.flatMap((d) => d.activities);
-      const emptyCount = allActivities.filter((a) => a.type === "empty").length;
-
-      let proactiveMsg: string;
-      let suggestions: string[];
-
-      if (emptyCount > 0) {
-        proactiveMsg = `Your plan for ${itinerary.destination} is ready! There are ${emptyCount} open slot${emptyCount > 1 ? "s" : ""} — you can fill them yourself or just tell me what you'd like to do and I'll add it in.`;
-        suggestions = [
-          "Fill my open slots",
-          "What do you suggest for free time?",
-          "Tell me about the culture",
-        ];
-      } else {
-        const days = itinerary.days;
-        if (days[0]?.activities?.length >= 2) {
-          const first = days[0].activities[0];
-          const second = days[0].activities[1];
-          proactiveMsg = `Looks like a great plan for ${itinerary.destination}! I noticed you have some time between "${first?.recommendation.name}" and "${second?.recommendation.name}". Want me to find something nearby?`;
-        } else {
-          proactiveMsg = `Looks like a great plan for ${itinerary.destination}! I'm here to help with any questions, suggest alternatives, or fill in any gaps.`;
-        }
-        suggestions = ["Find something nearby", "Optimize my route", "Tell me about the culture"];
-      }
-
-      addMessage({
-        id: `ai-proactive-${Date.now()}`,
-        role: "assistant",
-        content: proactiveMsg,
-        timestamp: new Date().toISOString(),
-        suggestions,
-      });
-    }
-    // Run only when itinerary is first loaded
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itinerary?.id]);
+  // Proactive greeting removed — assistant only responds when the user speaks first
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   // ─── Draggable + resizable panel state ────────────────────────────────────
 

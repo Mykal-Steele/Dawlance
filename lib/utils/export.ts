@@ -4,46 +4,22 @@ import type { Itinerary } from "@/lib/types";
 
 // ─── PDF export ───────────────────────────────────────────────────────────────
 
-export async function exportToPDF(itinerary: Itinerary): Promise<void> {
-  // Dynamically import to keep it out of the initial bundle
-  const { default: html2pdfLib } = await import("html2pdf.js");
-
+export function exportToPDF(itinerary: Itinerary): void {
   const element = document.getElementById("itinerary-export-root");
   if (!element) {
-    throw new Error("Could not find itinerary content to export");
+    throw new Error("Switch to List view before exporting PDF");
   }
 
-  const filename = `${itinerary.destination.replace(/\s+/g, "-")}-itinerary.pdf`;
+  // Set a data attribute so the print CSS can target only this itinerary
+  document.title = `${itinerary.destination} Itinerary`;
+  document.body.setAttribute("data-printing", "itinerary");
 
-  // Use the chainable builder API and output as blob, then download via anchor.
-  // This is more reliable than jsPDF's built-in save() which can be blocked by
-  // browsers in async contexts.
-  type H2PWorker = {
-    set(opts: object): H2PWorker;
-    from(el: HTMLElement): H2PWorker;
-    outputPdf(type: "blob"): Promise<Blob>;
+  const cleanup = () => {
+    document.body.removeAttribute("data-printing");
   };
-  const builder = (html2pdfLib as unknown as () => H2PWorker)();
-  const blob = await builder
-    .set({
-      margin: 10,
-      filename,
-      image: { type: "jpeg", quality: 0.92 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    })
-    .from(element)
-    .outputPdf("blob");
 
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.style.display = "none";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  window.addEventListener("afterprint", cleanup, { once: true });
+  window.print();
 }
 
 // ─── iCal export ─────────────────────────────────────────────────────────────

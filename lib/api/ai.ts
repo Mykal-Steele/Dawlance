@@ -100,7 +100,7 @@ export async function sendChatMessage(
   }
 
   return {
-    message: fullMessage.trim() || "Done! I've updated your plan.",
+    message: fullMessage.trim() || "I didn't catch that. Could you try rephrasing?",
     actions: parsedActions,
   };
 }

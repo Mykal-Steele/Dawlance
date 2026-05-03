@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import type { Itinerary } from "@/lib/types";
-import { exportToIcal, exportToEmail } from "@/lib/utils/export";
+import { exportToIcal, exportToEmail, exportToPDF } from "@/lib/utils/export";
 
 interface ExportShareMenuProps {
   itinerary: Itinerary;
@@ -11,7 +11,6 @@ interface ExportShareMenuProps {
 
 export function ExportShareMenu({ itinerary }: ExportShareMenuProps): React.ReactElement {
   const [open, setOpen] = useState(false);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -26,19 +25,13 @@ export function ExportShareMenu({ itinerary }: ExportShareMenuProps): React.Reac
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
-  async function handlePDF(): Promise<void> {
+  function handlePDF(): void {
     setOpen(false);
-    setIsGeneratingPDF(true);
-    const toastId = toast.loading("Generating PDF…");
     try {
-      const { exportToPDF } = await import("@/lib/utils/export");
-      await exportToPDF(itinerary);
-      toast.success("PDF downloaded!", { id: toastId });
+      exportToPDF(itinerary);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Export failed";
-      toast.error(msg, { id: toastId });
-    } finally {
-      setIsGeneratingPDF(false);
+      toast.error(msg);
     }
   }
 
@@ -100,14 +93,12 @@ export function ExportShareMenu({ itinerary }: ExportShareMenuProps): React.Reac
     }
   }
 
-  const isLoading = isGeneratingPDF || isGeneratingLink;
-
   return (
     <div ref={menuRef} className="relative">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        disabled={isLoading}
+        disabled={isGeneratingLink}
         className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 disabled:opacity-50"
         aria-label="Export or share itinerary"
         aria-haspopup="true"
