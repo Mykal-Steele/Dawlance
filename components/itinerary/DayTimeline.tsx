@@ -27,6 +27,7 @@ interface SortableActivityProps {
   activity: Activity;
   dayIndex: number;
   activityIndex: number;
+  readOnly?: boolean;
   onEdit: (dayIndex: number, activityIndex: number) => void;
   onRemove: (dayIndex: number, activityIndex: number) => void;
 }
@@ -36,6 +37,7 @@ function SortableActivity({
   activity,
   dayIndex,
   activityIndex,
+  readOnly = false,
   onEdit,
   onRemove,
 }: SortableActivityProps): React.ReactElement {
@@ -56,6 +58,7 @@ function SortableActivity({
         dayIndex={dayIndex}
         activityIndex={activityIndex}
         isDragging={isDragging}
+        readOnly={readOnly}
         onEdit={onEdit}
         onRemove={onRemove}
         dragHandleProps={{ ...attributes, ...listeners }}
@@ -69,6 +72,7 @@ function SortableActivity({
 interface DayTimelineProps {
   day: DayPlan;
   dayIndex: number;
+  readOnly?: boolean;
   onEdit: (dayIndex: number, activityIndex: number) => void;
   onRemove: (dayIndex: number, activityIndex: number) => void;
   onReorder: (dayIndex: number, fromIndex: number, toIndex: number) => void;
@@ -78,6 +82,7 @@ interface DayTimelineProps {
 export function DayTimeline({
   day,
   dayIndex,
+  readOnly = false,
   onEdit,
   onRemove,
   onReorder,
@@ -134,6 +139,7 @@ export function DayTimeline({
                 activity={activity}
                 dayIndex={dayIndex}
                 activityIndex={activityIndex}
+                readOnly={readOnly}
                 onEdit={onEdit}
                 onRemove={onRemove}
               />

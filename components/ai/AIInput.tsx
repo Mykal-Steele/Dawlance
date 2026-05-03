@@ -47,6 +47,7 @@ export function AIInput({ onSend, disabled = false }: AIInputProps): React.React
           disabled={disabled}
           placeholder="Ask me anything about your trip..."
           rows={1}
+          aria-label="Message AI assistant"
           className="flex-1 resize-none bg-transparent text-sm leading-relaxed text-gray-800 placeholder-gray-400 outline-none disabled:opacity-50"
           style={{ maxHeight: "120px" }}
         />

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { useItineraryStore } from "@/lib/stores/itinerary-store";
 import { useSelectionStore } from "@/lib/stores/selection-store";
 import { useFormStore } from "@/lib/stores/form-store";
@@ -38,6 +39,8 @@ import { DaySelector } from "./DaySelector";
 import { DayTimeline } from "./DayTimeline";
 import { ActivityEditModal } from "./ActivityEditModal";
 import { RouteMap } from "./RouteMap";
+import { ExportShareMenu } from "./ExportShareMenu";
+import { TimelineView } from "./TimelineView";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -140,7 +143,9 @@ function GeneratingSkeleton(): React.ReactElement {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function ItineraryView(): React.ReactElement {
+export function ItineraryView({
+  readOnly = false,
+}: { readOnly?: boolean } = {}): React.ReactElement {
   const {
     itinerary,
     updateItinerary,
@@ -157,6 +162,7 @@ export function ItineraryView(): React.ReactElement {
   const { destination, startDate, endDate, travelers, preferences } = useFormStore();
 
   const [selectedDay, setSelectedDay] = useState<number | "all">("all");
+  const [viewMode, setViewMode] = useState<"list" | "timeline">("list");
   const [editTarget, setEditTarget] = useState<EditTarget | null>(null);
   const [recalcError, setRecalcError] = useState<string | null>(null);
 
@@ -169,25 +175,24 @@ export function ItineraryView(): React.ReactElement {
 
   // ── Generate itinerary on mount if not yet available ───────────────────────
   // ── Save to Cloudant ──────────────────────────────────────────────────────
-  const handleSaveToCloudant = useCallback(
-    async (itin: Itinerary) => {
-      setSaveStatus("saving");
-      try {
-        let result: { id: string; rev: string };
-        if (cloudantRevRef.current) {
-          result = await updatePlan(itin, cloudantRevRef.current);
-        } else {
-          result = await createPlan(itin);
-        }
-        cloudantRevRef.current = result.rev;
-        setSaveStatus("saved");
-      } catch (err) {
-        console.error("[Cloudant save]", err);
-        setSaveStatus("error");
+  const handleSaveToCloudant = useCallback(async (itin: Itinerary) => {
+    setSaveStatus("saving");
+    try {
+      let result: { id: string; rev: string };
+      if (cloudantRevRef.current) {
+        result = await updatePlan(itin, cloudantRevRef.current);
+      } else {
+        result = await createPlan(itin);
       }
-    },
-    []
-  );
+      cloudantRevRef.current = result.rev;
+      setSaveStatus("saved");
+      toast.success("Changes saved");
+    } catch (err) {
+      console.error("[Cloudant save]", err);
+      setSaveStatus("error");
+      toast.error("Save failed — retrying");
+    }
+  }, []);
 
   const {
     mutate: generate,
@@ -225,6 +230,7 @@ export function ItineraryView(): React.ReactElement {
       updateItinerary(data.itinerary);
       rollbackRef.current = null;
       setRecalcError(null);
+      toast.success("Itinerary updated");
     },
     onError: (err) => {
       // Rollback optimistic update
@@ -381,19 +387,32 @@ export function ItineraryView(): React.ReactElement {
 
   return (
     <div className="space-y-6">
-      {/* Header: summary + undo/redo */}
+      {/* Header: summary + undo/redo + export */}
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm text-gray-500">{itinerary.summary}</p>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
+          {/* Export & Share */}
+          {!readOnly && <ExportShareMenu itinerary={itinerary} />}
           {/* Cloudant save status */}
           {saveStatus === "saving" && (
             <span className="flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-500">
               <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
               </svg>
               Saving…
             </span>
@@ -401,7 +420,12 @@ export function ItineraryView(): React.ReactElement {
           {saveStatus === "saved" && (
             <span className="flex items-center gap-1 rounded-full bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700">
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
               Saved
             </span>
@@ -414,7 +438,12 @@ export function ItineraryView(): React.ReactElement {
               title="Save failed — click to retry"
             >
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
               </svg>
               Retry save
             </button>
@@ -442,7 +471,7 @@ export function ItineraryView(): React.ReactElement {
           <button
             type="button"
             onClick={undo}
-            disabled={!canUndo}
+            disabled={!canUndo || readOnly}
             title="Undo (Ctrl+Z)"
             className="rounded-xl border border-gray-200 p-2 text-gray-600 transition-all hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Undo"
@@ -459,7 +488,7 @@ export function ItineraryView(): React.ReactElement {
           <button
             type="button"
             onClick={redo}
-            disabled={!canRedo}
+            disabled={!canRedo || readOnly}
             title="Redo (Ctrl+Shift+Z)"
             className="rounded-xl border border-gray-200 p-2 text-gray-600 transition-all hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
             aria-label="Redo"
@@ -504,72 +533,108 @@ export function ItineraryView(): React.ReactElement {
         </div>
       )}
 
-      {/* Day selector */}
-      <DaySelector itinerary={itinerary} selectedDay={selectedDay} onChange={setSelectedDay} />
-
-      {/* Timeline + map side by side */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
-        {/* Timeline column */}
-        <div className="space-y-8">
-          {activeDays.map(({ day, index }) => (
-            <div key={day.date}>
-              {selectedDay === "all" && (
-                <div className="mb-3 flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2A7BFF] text-sm font-bold text-white">
-                    {index + 1}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {new Date(day.date + "T00:00:00").toLocaleDateString("en-US", {
-                        weekday: "long",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                    {day.summary && <p className="text-xs text-gray-500">{day.summary}</p>}
-                  </div>
-                </div>
-              )}
-
-              <DayTimeline
-                day={day}
-                dayIndex={index}
-                onEdit={(dIdx, aIdx) => setEditTarget({ dayIndex: dIdx, activityIndex: aIdx })}
-                onRemove={handleRemove}
-                onReorder={handleReorder}
-                onFillSlot={fillEmptySlot}
-              />
-            </div>
-          ))}
+      {/* Day selector + view toggle */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <DaySelector itinerary={itinerary} selectedDay={selectedDay} onChange={setSelectedDay} />
         </div>
-
-        {/* Map column — sticky on desktop, always visible */}
-        <div className="lg:sticky lg:top-4 lg:self-start">
-          {(() => {
-            const mapDayIndex = selectedDay === "all" ? 0 : selectedDay;
-            const mapDay = itinerary.days[mapDayIndex];
-            if (!mapDay) return null;
-            const label =
-              selectedDay === "all"
-                ? `Day 1 — ${new Date(mapDay.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}`
-                : new Date(mapDay.date + "T00:00:00").toLocaleDateString("en-US", {
-                    weekday: "long",
-                    month: "short",
-                    day: "numeric",
-                  });
-            return (
-              <div className="space-y-2">
-                {selectedDay === "all" && (
-                  <p className="text-xs text-gray-400">
-                    Select a day above to see its route
-                  </p>
-                )}
-                <RouteMap day={mapDay} dayLabel={label} />
-              </div>
-            );
-          })()}
+        <div className="flex shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+          <button
+            type="button"
+            onClick={() => setViewMode("list")}
+            className={[
+              "px-3 py-1.5 text-xs font-medium transition-colors",
+              viewMode === "list"
+                ? "bg-white text-[#2A7BFF] shadow-sm"
+                : "text-gray-500 hover:text-gray-700",
+            ].join(" ")}
+            aria-pressed={viewMode === "list"}
+          >
+            List
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("timeline")}
+            className={[
+              "px-3 py-1.5 text-xs font-medium transition-colors",
+              viewMode === "timeline"
+                ? "bg-white text-[#2A7BFF] shadow-sm"
+                : "text-gray-500 hover:text-gray-700",
+            ].join(" ")}
+            aria-pressed={viewMode === "timeline"}
+          >
+            Timeline
+          </button>
         </div>
       </div>
+
+      {/* Timeline visualization */}
+      {viewMode === "timeline" && <TimelineView days={itinerary.days} selectedDay={selectedDay} />}
+
+      {/* Timeline + map side by side */}
+      {viewMode === "list" && (
+        <div id="itinerary-export-root" className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
+          {/* Timeline column */}
+          <div className="space-y-8">
+            {activeDays.map(({ day, index }) => (
+              <div key={day.date}>
+                {selectedDay === "all" && (
+                  <div className="mb-3 flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2A7BFF] text-sm font-bold text-white">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {new Date(day.date + "T00:00:00").toLocaleDateString("en-US", {
+                          weekday: "long",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                      {day.summary && <p className="text-xs text-gray-500">{day.summary}</p>}
+                    </div>
+                  </div>
+                )}
+
+                <DayTimeline
+                  day={day}
+                  dayIndex={index}
+                  readOnly={readOnly}
+                  onEdit={(dIdx, aIdx) => setEditTarget({ dayIndex: dIdx, activityIndex: aIdx })}
+                  onRemove={handleRemove}
+                  onReorder={handleReorder}
+                  onFillSlot={fillEmptySlot}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Map column — sticky on desktop, always visible */}
+          <div className="lg:sticky lg:top-4 lg:self-start">
+            {(() => {
+              const mapDayIndex = selectedDay === "all" ? 0 : selectedDay;
+              const mapDay = itinerary.days[mapDayIndex];
+              if (!mapDay) return null;
+              const label =
+                selectedDay === "all"
+                  ? `Day 1 — ${new Date(mapDay.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}`
+                  : new Date(mapDay.date + "T00:00:00").toLocaleDateString("en-US", {
+                      weekday: "long",
+                      month: "short",
+                      day: "numeric",
+                    });
+              return (
+                <div className="space-y-2">
+                  {selectedDay === "all" && (
+                    <p className="text-xs text-gray-400">Select a day above to see its route</p>
+                  )}
+                  <RouteMap day={mapDay} dayLabel={label} />
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
 
       {/* Edit modal */}
       {editTarget && editTargetActivity && (

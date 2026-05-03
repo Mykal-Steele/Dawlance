@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Be_Vietnam_Pro } from "next/font/google";
+import { Toaster } from "sonner";
 import { QueryProvider } from "@/lib/providers";
 import "./globals.css";
 
@@ -44,6 +45,7 @@ export default function RootLayout({
     >
       <body className="bg-background text-foreground flex min-h-full flex-col">
         <QueryProvider>{children}</QueryProvider>
+        <Toaster position="bottom-right" richColors closeButton />
       </body>
     </html>
   );

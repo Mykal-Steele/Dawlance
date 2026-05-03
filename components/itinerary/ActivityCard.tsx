@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { toast } from "sonner";
 import type { Activity } from "@/lib/types";
 
 interface ActivityCardProps {
@@ -8,6 +9,7 @@ interface ActivityCardProps {
   dayIndex: number;
   activityIndex: number;
   isDragging?: boolean;
+  readOnly?: boolean;
   onEdit: (dayIndex: number, activityIndex: number) => void;
   onRemove: (dayIndex: number, activityIndex: number) => void;
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
@@ -49,6 +51,7 @@ export function ActivityCard({
   dayIndex,
   activityIndex,
   isDragging = false,
+  readOnly = false,
   onEdit,
   onRemove,
   dragHandleProps,
@@ -67,16 +70,18 @@ export function ActivityCard({
       {/* Time badge + drag handle row */}
       <div className="flex items-center justify-between px-4 pt-4">
         <div className="flex items-center gap-2">
-          {/* Drag handle */}
-          <div
-            {...dragHandleProps}
-            className="cursor-grab touch-none rounded-md p-1 text-gray-300 hover:text-gray-500 active:cursor-grabbing"
-            aria-label="Drag to reorder"
-          >
-            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm6-12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" />
-            </svg>
-          </div>
+          {/* Drag handle — hidden in readOnly mode */}
+          {!readOnly && (
+            <div
+              {...dragHandleProps}
+              className="cursor-grab touch-none rounded-md p-1 text-gray-300 hover:text-gray-500 active:cursor-grabbing"
+              aria-label="Drag to reorder"
+            >
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm6-12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" />
+              </svg>
+            </div>
+          )}
           <span className="text-sm font-semibold text-gray-900">{formatTime(activity.time)}</span>
           <span className="text-xs text-gray-400">·</span>
           <span className="text-xs text-gray-500">{formatDuration(activity.duration)}</span>
@@ -156,39 +161,44 @@ export function ActivityCard({
         </div>
       )}
 
-      {/* Edit / Remove — visible on hover */}
-      <div className="absolute top-3 right-3 hidden gap-1 group-hover:flex">
-        <button
-          type="button"
-          onClick={() => onEdit(dayIndex, activityIndex)}
-          className="rounded-lg bg-white p-1.5 shadow-sm ring-1 ring-gray-200 transition-all hover:bg-[#2A7BFF] hover:text-white hover:ring-[#2A7BFF]"
-          aria-label="Edit activity"
-        >
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-            />
-          </svg>
-        </button>
-        <button
-          type="button"
-          onClick={() => onRemove(dayIndex, activityIndex)}
-          className="rounded-lg bg-white p-1.5 shadow-sm ring-1 ring-gray-200 transition-all hover:bg-red-500 hover:text-white hover:ring-red-500"
-          aria-label="Remove activity"
-        >
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-            />
-          </svg>
-        </button>
-      </div>
+      {/* Edit / Remove — visible on hover, hidden in readOnly mode */}
+      {!readOnly && (
+        <div className="absolute top-3 right-3 hidden gap-1 group-hover:flex">
+          <button
+            type="button"
+            onClick={() => onEdit(dayIndex, activityIndex)}
+            className="rounded-lg bg-white p-1.5 shadow-sm ring-1 ring-gray-200 transition-all hover:bg-[#2A7BFF] hover:text-white hover:ring-[#2A7BFF]"
+            aria-label="Edit activity"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onRemove(dayIndex, activityIndex);
+              toast.success(`Removed ${recommendation.name}`);
+            }}
+            className="rounded-lg bg-white p-1.5 shadow-sm ring-1 ring-gray-200 transition-all hover:bg-red-500 hover:text-white hover:ring-red-500"
+            aria-label="Remove activity"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

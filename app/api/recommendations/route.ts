@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { fetchPlacesPhotoByRef, fetchRecommendationImage } from "@/lib/services/image-service";
+import { trackAPICall } from "@/lib/analytics/cost-tracking";
 import type { Recommendation } from "@/lib/types";
 
 // ─── Google Places setup ─────────────────────────────────────────────────────
@@ -318,7 +319,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   inFlightRequests.set(cacheKey, promise);
 
   try {
-    return NextResponse.json(await promise);
+    const result = await promise;
+    void trackAPICall("places");
+    return NextResponse.json(result);
   } catch (error) {
     inFlightRequests.delete(cacheKey);
     const message = error instanceof Error ? error.message : "Failed to fetch recommendations";

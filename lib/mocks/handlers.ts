@@ -94,4 +94,47 @@ export const handlers = [
       actions: [],
     });
   }),
+
+  http.post("/api/itinerary/recalculate", () => {
+    return HttpResponse.json({
+      itinerary: {
+        id: "itin-1",
+        destination: "Paris",
+        startDate: "2026-06-01",
+        endDate: "2026-06-03",
+        days: [],
+        summary: "Recalculated trip to Paris.",
+        metadata: {
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          version: 2,
+        },
+      },
+      changedDays: [0],
+    });
+  }),
 ];
+
+/**
+ * Error-scenario handlers — use these in tests via `server.use(errorHandlers.xxx)`.
+ */
+export const errorHandlers = {
+  recommendationsValidation: http.post("/api/recommendations", () =>
+    HttpResponse.json({ error: "destination is required" }, { status: 400 })
+  ),
+  recommendationsUnavailable: http.post("/api/recommendations", () =>
+    HttpResponse.json({ error: "AI service unavailable" }, { status: 503 })
+  ),
+  itineraryValidation: http.post("/api/itinerary", () =>
+    HttpResponse.json({ error: "Invalid request body" }, { status: 400 })
+  ),
+  itineraryServerError: http.post("/api/itinerary", () =>
+    HttpResponse.json({ error: "Unexpected error" }, { status: 500 })
+  ),
+  chatValidation: http.post("/api/ai/chat", () =>
+    HttpResponse.json({ error: "message is required" }, { status: 400 })
+  ),
+  weatherError: http.get("/api/weather", () =>
+    HttpResponse.json({ error: "Weather API unavailable" }, { status: 503 })
+  ),
+};

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { chatComplete, MODEL_STRUCTURED } from "@/lib/utils/watsonx";
 import { aiRateLimiter } from "@/lib/utils/rate-limiter";
+import { trackAPICall } from "@/lib/analytics/cost-tracking";
 import type { Itinerary } from "@/lib/types";
 
 // ─── Request schema ───────────────────────────────────────────────────────────
@@ -212,7 +213,10 @@ Output ONLY this JSON (no markdown, no extra fields):
       .replace(/```\s*$/, "")
       .trim();
 
-    let slim: { days?: Array<{ activities?: SlimActivity[] }> } & Record<string, unknown>;
+    let slim: { days?: Array<{ date?: string; activities?: SlimActivity[] }> } & Record<
+      string,
+      unknown
+    >;
     try {
       slim = JSON.parse(cleaned) as typeof slim;
     } catch {
@@ -269,7 +273,7 @@ Output ONLY this JSON (no markdown, no extra fields):
       days: (slim.days ?? []).map((day) => {
         const expandedActivities = (day.activities ?? []).map((act) =>
           expandActivity(act)
-        ) as Itinerary["days"][number]["activities"];
+        ) as unknown as Itinerary["days"][number]["activities"];
 
         // Strip any model-generated hotel bookends — we'll inject our own
         const stripped = expandedActivities.filter((a) => {
@@ -298,10 +302,11 @@ Output ONLY this JSON (no markdown, no extra fields):
               15
             ),
           ] as Itinerary["days"][number]["activities"],
-        };
+        } as Itinerary["days"][number];
       }),
     };
 
+    void trackAPICall("watsonx");
     return NextResponse.json({ itinerary });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

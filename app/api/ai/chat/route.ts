@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { streamChat, MODEL_CHAT, type ChatMessage } from "@/lib/utils/watsonx";
 import { aiRateLimiter } from "@/lib/utils/rate-limiter";
+import { trackAPICall } from "@/lib/analytics/cost-tracking";
 
 // ─── Validation schema ────────────────────────────────────────────────────────
 
@@ -287,6 +288,7 @@ export async function POST(request: NextRequest): Promise<Response> {
           message: "Something went wrong. Please try again.",
         });
       } finally {
+        void trackAPICall("watsonx");
         controller.close();
       }
     },

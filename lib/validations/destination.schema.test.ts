@@ -1,14 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { destinationSchema } from "./destination.schema";
 
-const today = new Date();
-today.setHours(0, 0, 0, 0);
+function isoDate(offsetDays: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().slice(0, 10);
+}
 
-const tomorrow = new Date(today);
-tomorrow.setDate(today.getDate() + 1);
-
-const nextWeek = new Date(today);
-nextWeek.setDate(today.getDate() + 7);
+const today = isoDate(0);
+const tomorrow = isoDate(1);
+const nextWeek = isoDate(7);
+const yesterday = isoDate(-1);
 
 describe("destinationSchema", () => {
   it("accepts valid destination data", () => {
@@ -45,8 +47,6 @@ describe("destinationSchema", () => {
   });
 
   it("rejects a past start date", () => {
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
     const result = destinationSchema.safeParse({
       destination: "Paris",
       startDate: yesterday,

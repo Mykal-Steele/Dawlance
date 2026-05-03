@@ -78,6 +78,7 @@ export function ActivityEditModal({
       role="dialog"
       aria-modal="true"
       aria-label="Edit activity"
+      aria-describedby="activity-edit-desc"
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
     >
       {/* Backdrop */}
@@ -94,7 +95,7 @@ export function ActivityEditModal({
             >
               Edit Activity
             </h2>
-            <p className="mt-0.5 max-w-xs truncate text-sm text-gray-500">
+            <p id="activity-edit-desc" className="mt-0.5 max-w-xs truncate text-sm text-gray-500">
               {activity.recommendation.name}
             </p>
           </div>

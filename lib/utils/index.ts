@@ -1,6 +1,6 @@
 export { cn } from "./cn";
 export { retryWithBackoff } from "./retry";
 export { RateLimiter, aiRateLimiter } from "./rate-limiter";
-export { CircuitBreaker, geminiCircuitBreaker } from "./circuit-breaker";
+export { CircuitBreaker, watsonxCircuitBreaker } from "./circuit-breaker";
 
 // Made with Bob

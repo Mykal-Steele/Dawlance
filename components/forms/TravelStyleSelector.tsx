@@ -20,14 +20,12 @@ interface TravelStyleSelectorProps {
 
 export function TravelStyleSelector({ value, onChange, error }: TravelStyleSelectorProps) {
   const toggle = (style: string) => {
-    onChange(
-      value.includes(style) ? value.filter((v) => v !== style) : [...value, style]
-    );
+    onChange(value.includes(style) ? value.filter((v) => v !== style) : [...value, style]);
   };
 
   return (
     <div>
-      <div className="flex flex-wrap gap-3">
+      <div role="group" aria-label="Travel style" className="flex flex-wrap gap-3">
         {TRAVEL_STYLES.map(({ value: style, label, icon }) => (
           <Chip
             key={style}

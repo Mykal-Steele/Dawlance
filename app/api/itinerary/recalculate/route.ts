@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { chatComplete, MODEL_STRUCTURED } from "@/lib/utils/watsonx";
 import { aiRateLimiter } from "@/lib/utils/rate-limiter";
-import { geminiCircuitBreaker } from "@/lib/utils/circuit-breaker";
+import { watsonxCircuitBreaker } from "@/lib/utils/circuit-breaker";
 import { retryWithBackoff } from "@/lib/utils/retry";
 import type { Itinerary, Activity } from "@/lib/types";
 
@@ -231,7 +231,7 @@ Return ONLY valid JSON with no markdown formatting.`;
   try {
     await aiRateLimiter.throttle();
 
-    const responseText = await geminiCircuitBreaker.execute(() =>
+    const responseText = await watsonxCircuitBreaker.execute(() =>
       retryWithBackoff(
         () =>
           chatComplete({

@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import Link from "next/link";
+import { toast } from "sonner";
 import { useFormStore } from "@/lib/stores/form-store";
 import { useSelectionStore } from "@/lib/stores/selection-store";
 import { validateSelections, getDisqualifyReason } from "@/lib/validations/itinerary-validation";
@@ -190,7 +191,8 @@ export function DiscoveryPage() {
 
   // Overall validation (used on last phase)
   const validation = useMemo(() => {
-    if (!startDate || !endDate) return { valid: false, errors: ["Missing trip dates"] };
+    if (!startDate || !endDate)
+      return { valid: false, errors: ["Missing trip dates"], warnings: [] };
     return validateSelections(selectedRecommendations, startDate, endDate);
   }, [selectedRecommendations, startDate, endDate]);
 
@@ -600,7 +602,13 @@ export function DiscoveryPage() {
             ) : (
               <Link
                 href={selectedRecommendations.length > 0 ? "/plan/itinerary" : "#"}
-                onClick={(e) => selectedRecommendations.length === 0 && e.preventDefault()}
+                onClick={(e) => {
+                  if (selectedRecommendations.length === 0) {
+                    e.preventDefault();
+                  } else {
+                    toast.loading("Generating your itinerary\u2026", { id: "gen-itinerary" });
+                  }
+                }}
                 className={[
                   "flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-sm transition-all",
                   selectedRecommendations.length > 0

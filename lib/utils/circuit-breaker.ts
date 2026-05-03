@@ -50,4 +50,4 @@ export class CircuitBreaker {
 }
 
 // Opens after 3 consecutive failures, recovers after 1 minute
-export const geminiCircuitBreaker = new CircuitBreaker();
+export const watsonxCircuitBreaker = new CircuitBreaker();
