@@ -77,13 +77,17 @@ export function RouteMap({ day, dayLabel }: RouteMapProps): React.ReactElement {
 
         const map = new Map(mapRef.current, {
           center,
-          zoom: 14,
-          mapId: "DAWLANCE_ROUTE_MAP",
+          zoom: 13,
+          // "DEMO_MAP_ID" is Google's built-in test Map ID that enables AdvancedMarkerElement.
+          // Override with NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID for a production registered Map ID.
+          mapId: process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID ?? "DEMO_MAP_ID",
           disableDefaultUI: false,
           zoomControl: true,
           streetViewControl: false,
           mapTypeControl: false,
           fullscreenControl: true,
+          // Prevent fitBounds from zooming in too tight on small cities
+          maxZoom: 16,
         });
 
         mapInstanceRef.current = map;
@@ -109,14 +113,14 @@ export function RouteMap({ day, dayLabel }: RouteMapProps): React.ReactElement {
             background: colour,
             borderColor: "#ffffff",
             glyphColor: "#ffffff",
-            glyph: String(index + 1),
+            glyphText: String(index + 1),
             scale: 1.1,
-          });
+          } as google.maps.marker.PinElementOptions);
 
           const marker = new AdvancedMarkerElement({
             map,
             position: coords,
-            content: pin.element,
+            content: pin as unknown as HTMLElement,
             title: activity.recommendation.name,
           });
 
@@ -129,7 +133,7 @@ export function RouteMap({ day, dayLabel }: RouteMapProps): React.ReactElement {
             </div>`,
           });
 
-          marker.addListener("click", () => {
+          marker.addEventListener("gmp-click", () => {
             infoWindow.open({ anchor: marker, map });
           });
 
@@ -158,7 +162,11 @@ export function RouteMap({ day, dayLabel }: RouteMapProps): React.ReactElement {
 
         // Fit map to all markers
         if (mappableActivities.length > 1) {
-          map.fitBounds(bounds, 40);
+          map.fitBounds(bounds, 80);
+        } else {
+          // Single point — just centre, don't call fitBounds (it over-zooms)
+          map.setCenter(center);
+          map.setZoom(14);
         }
 
         setIsLoading(false);

@@ -6,10 +6,7 @@ import type { Itinerary } from "@/lib/types";
 
 export async function exportToPDF(itinerary: Itinerary): Promise<void> {
   // Dynamically import to keep it out of the initial bundle
-  const html2pdf = (await import("html2pdf.js")).default as (
-    element: HTMLElement,
-    options?: object
-  ) => { save: () => void };
+  const { default: html2pdfLib } = await import("html2pdf.js");
 
   const element = document.getElementById("itinerary-export-root");
   if (!element) {
@@ -18,13 +15,35 @@ export async function exportToPDF(itinerary: Itinerary): Promise<void> {
 
   const filename = `${itinerary.destination.replace(/\s+/g, "-")}-itinerary.pdf`;
 
-  html2pdf(element, {
-    margin: 10,
-    filename,
-    image: { type: "jpeg", quality: 0.92 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-  }).save();
+  // Use the chainable builder API and output as blob, then download via anchor.
+  // This is more reliable than jsPDF's built-in save() which can be blocked by
+  // browsers in async contexts.
+  type H2PWorker = {
+    set(opts: object): H2PWorker;
+    from(el: HTMLElement): H2PWorker;
+    outputPdf(type: "blob"): Promise<Blob>;
+  };
+  const builder = (html2pdfLib as unknown as () => H2PWorker)();
+  const blob = await builder
+    .set({
+      margin: 10,
+      filename,
+      image: { type: "jpeg", quality: 0.92 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    })
+    .from(element)
+    .outputPdf("blob");
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // ─── iCal export ─────────────────────────────────────────────────────────────

@@ -74,9 +74,7 @@ async function fetchFromOpenWeather(
   const forecasts: DailyForecast[] = Array.from(dayMap.entries()).map(([date, items]) => {
     const tempHigh = Math.round(Math.max(...items.map((i) => i.main.temp_max)));
     const tempLow = Math.round(Math.min(...items.map((i) => i.main.temp_min)));
-    const humidity = Math.round(
-      items.reduce((sum, i) => sum + i.main.humidity, 0) / items.length
-    );
+    const humidity = Math.round(items.reduce((sum, i) => sum + i.main.humidity, 0) / items.length);
     const precipitation = Math.round(Math.max(...items.map((i) => i.pop)) * 100);
 
     const counts = new Map<string, number>();
@@ -130,8 +128,7 @@ function generateClothingRecommendations(forecasts: DailyForecast[]): ClothingIt
       description: "Breathable t-shirts, shorts, and light dresses",
       icon: "👕",
       category: "clothing",
-      warning:
-        maxHumidity >= 80 ? "Heavy denim uncomfortable in high humidity" : undefined,
+      warning: maxHumidity >= 80 ? "Heavy denim uncomfortable in high humidity" : undefined,
     });
   } else if (avgHigh >= 20) {
     items.push({
@@ -254,7 +251,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       const result = await retryWithBackoff(
         () => fetchFromOpenWeather(destination),
         3,
-        1000
+        1000,
+        // Don't retry on bad location — it will always fail
+        (err) => !(err instanceof Error && err.message.includes("Location not found"))
       );
       forecasts = result.forecasts;
       location = result.location;

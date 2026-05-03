@@ -43,7 +43,10 @@ export default function RootLayout({
       lang="en"
       className={`${plusJakartaSans.variable} ${beVietnamPro.variable} h-full antialiased`}
     >
-      <body className="bg-background text-foreground flex min-h-full flex-col">
+      <body
+        suppressHydrationWarning
+        className="bg-background text-foreground flex min-h-full flex-col"
+      >
         <QueryProvider>{children}</QueryProvider>
         <Toaster position="bottom-right" richColors closeButton />
       </body>

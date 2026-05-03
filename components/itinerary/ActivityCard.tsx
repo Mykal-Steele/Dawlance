@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { toast } from "sonner";
+import { useItineraryStore } from "@/lib/stores/itinerary-store";
 import type { Activity } from "@/lib/types";
 
 interface ActivityCardProps {
@@ -57,6 +58,7 @@ export function ActivityCard({
   dragHandleProps,
 }: ActivityCardProps): React.ReactElement {
   const { recommendation } = activity;
+  const isHighlighted = useItineraryStore((s) => s.highlightedActivityIds.has(activity.id));
 
   return (
     <div
@@ -65,6 +67,7 @@ export function ActivityCard({
         isDragging
           ? "scale-[1.02] border-[#2A7BFF]/40 shadow-lg"
           : "border-gray-100 hover:border-gray-200 hover:shadow-md",
+        isHighlighted ? "animate-ai-highlight" : "",
       ].join(" ")}
     >
       {/* Time badge + drag handle row */}

@@ -95,6 +95,18 @@ Use the context you have. Don't ask generic questions that could apply to any tr
 
 Never assume details that aren't explicitly in the context. If preferences say "pet-friendly" don't say "your dog" — you don't know what pet they have. If budget isn't set, don't assume cheap or expensive. Stick exactly to what's provided.
 
+## When you take an action
+
+When you fill a slot or add an activity, ALWAYS tell the user:
+1. What you added (place name)
+2. One concrete reason why it fits (location, vibe, timing, or what it's good for)
+
+Keep it to 1-2 sentences max. Be specific. Examples:
+- "Added Café Hawelka — it's a classic Viennese coffeehouse two blocks from your hotel, perfect before heading to the Kunsthistorisches Museum."
+- "Squeezed in Naschmarkt for Day 2 afternoon — it's open until 6 PM and right on your route from the Opera."
+
+NEVER write vague phrases like "Done! I've updated your plan.", "I've made the change.", "I've added it to your itinerary.", or any other generic confirmation. Always name the place and say something real about it.
+
 ## Filling empty slots in the itinerary
 
 The itinerary may have activities with type "empty" — these are unplanned time slots the user needs to fill. When the user asks you to fill a slot (e.g. "for tomorrow afternoon, I want to visit X", "fill my open slots", "add a museum for Day 3"), you MUST include a structured action in your response JSON so the app can update the plan automatically.
@@ -263,15 +275,17 @@ export async function POST(request: NextRequest): Promise<Response> {
         if (markerMatch && !cleanText && parsedActions?.length) {
           const first = parsedActions[0] as {
             type?: string;
-            payload?: { place?: { name?: string } };
+            payload?: { place?: { name?: string; address?: string } };
           };
           const placeName = first?.payload?.place?.name;
+          const placeAddress = first?.payload?.place?.address;
+          const locationHint = placeAddress ? ` (${placeAddress})` : "";
           if (first?.type === "fill_slot" && placeName) {
-            cleanText = `Added ${placeName} to your plan.`;
+            cleanText = `Added ${placeName}${locationHint} to your plan.`;
           } else if (first?.type === "add_activity" && placeName) {
-            cleanText = `Added ${placeName} to your itinerary.`;
+            cleanText = `Added ${placeName}${locationHint} to your itinerary.`;
           } else {
-            cleanText = "Done! I've updated your plan.";
+            cleanText = "Added it to your plan.";
           }
         }
 

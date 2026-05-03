@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useFormStore } from "@/lib/stores";
 import { WeatherForecast } from "./WeatherForecast";
 import { ClothingRecommendations } from "./ClothingRecommendations";
@@ -72,7 +73,21 @@ export function WeatherDashboard() {
       <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
         <div className="mb-2 text-3xl">⚠️</div>
         <h3 className="mb-2 font-semibold text-red-700">Could not load weather</h3>
-        <p className="text-sm text-red-600">{error?.message ?? "Please try again."}</p>
+        <p className="mb-6 text-sm text-red-600">{error?.message ?? "Please try again."}</p>
+        <Link
+          href="/plan/preferences"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#2A7BFF] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#2A7BFF]/90"
+        >
+          Continue without weather
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 7l5 5m0 0l-5 5m5-5H6"
+            />
+          </svg>
+        </Link>
       </div>
     );
   }

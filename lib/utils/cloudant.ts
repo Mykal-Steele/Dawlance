@@ -100,15 +100,16 @@ export async function saveItinerary(
 
   const data = (await res.json()) as { id?: string; rev?: string; error?: string; reason?: string };
 
-  // 409 conflict without a rev means the doc already exists — fetch its current rev and retry once
+  // 409 conflict without a rev means the doc already exists — fetch its current _rev and retry once
   if (res.status === 409 && !rev) {
     const existingRes = await fetch(`${dbUrl()}/${encodeURIComponent(itinerary.id)}`, {
-      method: "HEAD",
       headers: { Authorization: `Bearer ${token}` },
     });
-    const currentRev = existingRes.headers.get("ETag")?.replace(/"/g, "");
-    if (currentRev) {
-      return saveItinerary(itinerary, currentRev);
+    if (existingRes.ok) {
+      const doc = (await existingRes.json()) as { _rev?: string };
+      if (doc._rev) {
+        return saveItinerary(itinerary, doc._rev);
+      }
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { DayPlan, Activity, Itinerary } from "@/lib/types";
+import { RouteMap } from "@/components/itinerary/RouteMap";
 
 // ─── Minimal read-only itinerary view for shared links ─────────────────────
 
@@ -56,6 +57,11 @@ function ReadOnlyDaySection({
   day: DayPlan;
   dayNumber: number;
 }): React.ReactElement {
+  const dayLabel = new Date(day.date + "T00:00:00").toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
   return (
     <div>
       <div className="mb-3 flex items-center gap-3">
@@ -63,13 +69,7 @@ function ReadOnlyDaySection({
           {dayNumber}
         </div>
         <div>
-          <p className="text-sm font-semibold text-gray-900">
-            {new Date(day.date + "T00:00:00").toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-            })}
-          </p>
+          <p className="text-sm font-semibold text-gray-900">{dayLabel}</p>
           {day.summary && <p className="text-xs text-gray-500">{day.summary}</p>}
         </div>
       </div>
@@ -79,6 +79,9 @@ function ReadOnlyDaySection({
           .map((activity) => (
             <ReadOnlyActivityCard key={activity.id} activity={activity} />
           ))}
+      </div>
+      <div className="mt-4">
+        <RouteMap day={day} dayLabel={dayLabel} />
       </div>
     </div>
   );

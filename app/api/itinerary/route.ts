@@ -62,13 +62,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  // Compact list for the prompt — one line per place to minimise input tokens
+  // Compact list for the prompt — bracket notation makes it harder for the model to confuse
+  // the ID with the name
   const recIndex = selectedRecommendations
     .filter((r): r is RawRec => typeof r === "object" && r !== null)
     .map((r) => {
       const loc = r.location as Record<string, unknown> | undefined;
       const coords = loc?.coordinates as Record<string, unknown> | undefined;
-      return `${r.id}|${r.name}|${r.category}|${r.estimatedDuration}min|${coords?.lat ?? 0},${coords?.lng ?? 0}|${r.openingHours ?? ""}`;
+      return `[${r.id}] ${r.name} | ${r.category} | ${r.estimatedDuration}min | lat=${coords?.lat ?? 0},lng=${coords?.lng ?? 0} | ${r.openingHours ?? ""}`;
     })
     .join("\n");
 
@@ -88,25 +89,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
     ) + 1
   );
-  // granite-3-8b generates ~30 tok/sec; vllm deadline is ~90s → cap at 1500 tokens (~50s)
-  const maxOutputTokens = Math.min(1500, Math.max(800, numDays * 6 * 45));
+  // Allow enough tokens for full JSON output. ~500 tokens per day is safe for Granite.
+  const maxOutputTokens = Math.min(3000, Math.max(1500, numDays * 500));
 
   const prompt = `Plan a trip to ${destination} (${startDate} to ${endDate}) for ${travelers} person(s).
 
-Places (id|name|category|duration|lat,lng|hours):
+Available places — use the ID inside brackets as recId, never the place name:
 ${recIndex}
 
 Prefs: style=${preferences.travelStyle?.join(",") ?? "general"}, budget=${preferences.budget ?? "moderate"}, transport=${transportMode}, group=${preferences.groupDynamics ?? "solo"}, pace=${pace}, breakfast=${preferences.mealTimes?.breakfast ?? "08:00"}, lunch=${preferences.mealTimes?.lunch ?? "12:00"}, dinner=${preferences.mealTimes?.dinner ?? "19:00"}, diet=${preferences.dietaryRestrictions?.join(",") ?? "none"}
 
 RULES:
-1. Use each place id exactly once across all days. Never invent new places.
-2. Restaurants go at meal times only.
-3. If no place fits a slot, use recId="empty".
-4. ${pace === "relaxed" ? "Include mid-afternoon rest." : pace === "fast" ? "Back-to-back, minimal gaps." : "Balance activity with free time."}
-5. Keep all summaries under 10 words.
+1. CRITICAL: The recId field MUST be copied EXACTLY from inside the brackets, e.g. "attraction-abc-0". NEVER use a place name as recId.
+2. Every recId must appear AT MOST ONCE across the ENTIRE trip.
+3. You have ${selectedRecommendations.filter((r): r is RawRec => typeof r === "object" && r !== null && (r as RawRec).category === "restaurant").length} restaurant(s). Each may be used AT MOST ONCE. Spread across days. If no unused restaurant is available for a meal slot, use recId="empty".
+4. Restaurants go at meal times only (breakfast ~08:00, lunch ~12:00, dinner ~19:00).
+5. If no place fits a slot, use recId="empty". Never invent IDs.
+6. duration must be a plain integer (minutes), not a string like "30min".
+7. ${pace === "relaxed" ? "Include mid-afternoon rest." : pace === "fast" ? "Back-to-back, minimal gaps." : "Balance activity with free time."}
+8. Keep all summaries under 10 words.
 
 Output ONLY this JSON (no markdown, no extra fields):
-{"id":"trip-1","destination":"${destination}","startDate":"${startDate}","endDate":"${endDate}","summary":"Brief summary","days":[{"date":"YYYY-MM-DD","summary":"Day summary","activities":[{"id":"a1","time":"HH:MM","duration":NUMBER,"type":"attraction|meal|rest|travel|empty","recId":"PLACE_ID"}]}],"metadata":{"createdAt":"${new Date().toISOString()}","updatedAt":"${new Date().toISOString()}","version":1}}`;
+{"id":"trip-1","destination":"${destination}","startDate":"${startDate}","endDate":"${endDate}","summary":"Brief summary","days":[{"date":"YYYY-MM-DD","summary":"Day summary","activities":[{"id":"a1","time":"HH:MM","duration":NUMBER,"type":"attraction|meal|rest|travel|empty","recId":"EXACT_BRACKET_ID"}]}],"metadata":{"createdAt":"${new Date().toISOString()}","updatedAt":"${new Date().toISOString()}","version":1}}`;
 
   // ── Synthetic full recommendation objects for special recIds ─────────────────
   function makeHotelRec(name: string, actId: string): RawRec {
@@ -144,7 +148,7 @@ Output ONLY this JSON (no markdown, no extra fields):
   interface SlimActivity {
     id: string;
     time: string;
-    duration: number;
+    duration: number | string; // model sometimes outputs "30min" — coerced below
     type: string;
     recId: string;
     culturalContext?: string;
@@ -153,6 +157,18 @@ Output ONLY this JSON (no markdown, no extra fields):
     notes?: string;
   }
   function expandActivity(act: SlimActivity): Record<string, unknown> {
+    // Coerce string durations like "30min" / "1h" / "120" to a plain number
+    let durationMinutes: number;
+    if (typeof act.duration === "number") {
+      durationMinutes = act.duration;
+    } else {
+      const raw = String(act.duration);
+      const minMatch = raw.match(/(\d+)\s*min/i);
+      const hrMatch = raw.match(/(\d+)\s*h(?:our)?/i);
+      if (minMatch) durationMinutes = parseInt(minMatch[1]!, 10);
+      else if (hrMatch) durationMinutes = parseInt(hrMatch[1]!, 10) * 60;
+      else durationMinutes = parseInt(raw, 10) || 60;
+    }
     const { recId, ...rest } = act;
     let rec: RawRec;
     if (recId === "hotel-depart" || recId.startsWith("hotel-depart")) {
@@ -166,7 +182,7 @@ Output ONLY this JSON (no markdown, no extra fields):
         id: recId,
         name: recId,
         category: "attraction",
-        estimatedDuration: act.duration,
+        estimatedDuration: durationMinutes,
         priceRange: 1,
         location: { address: "", coordinates: { lat: 0, lng: 0 } },
         openingHours: "",
@@ -175,7 +191,7 @@ Output ONLY this JSON (no markdown, no extra fields):
         tags: [],
       };
     }
-    return { ...rest, recommendation: rec };
+    return { ...rest, duration: durationMinutes, recommendation: rec };
   }
 
   // ── Time helpers ─────────────────────────────────────────────────────────────
@@ -203,15 +219,31 @@ Output ONLY this JSON (no markdown, no extra fields):
       maxTokens: maxOutputTokens,
       temperature: 0.3,
       jsonMode: true,
-      timeLimitMs: 60_000,
+      timeLimitMs: 90_000,
     });
 
     // Strip markdown fences in case the model adds them despite instructions
-    const cleaned = responseText
+    const stripped = responseText
       .trim()
       .replace(/^```json\s*/i, "")
       .replace(/```\s*$/, "")
       .trim();
+
+    // Robust JSON extraction: find the outermost {...} object so trailing text doesn't break parse
+    let cleaned = stripped;
+    const firstBrace = stripped.indexOf("{");
+    if (firstBrace !== -1) {
+      let depth = 0;
+      let lastClose = -1;
+      for (let i = firstBrace; i < stripped.length; i++) {
+        if (stripped[i] === "{") depth++;
+        else if (stripped[i] === "}") {
+          depth--;
+          if (depth === 0) { lastClose = i; break; }
+        }
+      }
+      if (lastClose !== -1) cleaned = stripped.slice(firstBrace, lastClose + 1);
+    }
 
     let slim: { days?: Array<{ date?: string; activities?: SlimActivity[] }> } & Record<
       string,
@@ -268,12 +300,26 @@ Output ONLY this JSON (no markdown, no extra fields):
       };
     }
 
+    // Track used recIds across ALL days so duplicate recIds from the AI are collapsed to empty
+    const usedRecIds = new Set<string>();
+
     const itinerary: Itinerary = {
       ...(slim as Omit<Itinerary, "days">),
       days: (slim.days ?? []).map((day) => {
-        const expandedActivities = (day.activities ?? []).map((act) =>
-          expandActivity(act)
-        ) as unknown as Itinerary["days"][number]["activities"];
+        const expandedActivities = (day.activities ?? []).map((act, actIdx) => {
+          const isSpecial =
+            act.recId === "empty" ||
+            act.recId.startsWith("hotel-") ||
+            act.recId.startsWith("empty");
+          // If AI reused a recId already seen, collapse to empty
+          const dedupedAct =
+            !isSpecial && usedRecIds.has(act.recId) ? { ...act, recId: "empty" } : act;
+          if (!isSpecial) usedRecIds.add(act.recId);
+          return {
+            ...expandActivity(dedupedAct),
+            id: `${day.date ?? "d"}-act-${actIdx}`,
+          };
+        }) as unknown as Itinerary["days"][number]["activities"];
 
         // Strip any model-generated hotel bookends — we'll inject our own
         const stripped = expandedActivities.filter((a) => {

@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+/* ─── AI highlight animation ──────────────────────────────────────────────── */
+@keyframes ai-highlight {
+  0% {
+    box-shadow: 0 0 0 3px rgba(42, 123, 255, 0.55);
+    border-color: rgba(42, 123, 255, 0.75);
+  }
+  60% {
+    box-shadow: 0 0 0 6px rgba(42, 123, 255, 0);
+    border-color: rgba(42, 123, 255, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(42, 123, 255, 0);
+    border-color: transparent;
+  }
+}
+
+.animate-ai-highlight {
+  animation: ai-highlight 2.8s ease-out forwards;
+}
+
 :root {
   /* Color Palette */
   --color-primary: #2a7bff;

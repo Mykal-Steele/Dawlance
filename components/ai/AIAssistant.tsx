@@ -20,7 +20,14 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
   const [streamingText, setStreamingText] = useState("");
 
   const { messages, isTyping, addMessage, setTyping } = useAIStore();
-  const { itinerary, editActivity, fillEmptySlot, addActivity } = useItineraryStore();
+  const {
+    itinerary,
+    editActivity,
+    fillEmptySlot,
+    addActivity,
+    markActivityAdded,
+    clearActivityHighlight,
+  } = useItineraryStore();
   const { destination, preferences, startDate, endDate, travelers } = useFormStore();
 
   // Build context from store state
@@ -174,6 +181,10 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
           attireSuggestion: place.attireSuggestion ?? "",
         });
 
+        // Highlight the newly filled slot
+        markActivityAdded(slotId);
+        setTimeout(() => clearActivityHighlight(slotId), 3500);
+
         // When there are still more empty slots on that day, offer to fill them
         const remainingEmpty =
           itinerary?.days[dayIndex]?.activities.filter((a) => a.type === "empty" && a.id !== slotId)
@@ -203,8 +214,9 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
       const payload = action.payload as FillSlotPayload | null;
       if (payload && typeof payload.dayIndex === "number" && payload.place) {
         const { place, dayIndex } = payload;
+        const actId = `ai-added-${Date.now()}`;
         addActivity(dayIndex, -1, {
-          id: `ai-added-${Date.now()}`,
+          id: actId,
           time: "",
           duration: place.duration ?? 90,
           type: place.type,
@@ -228,6 +240,10 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
           culturalContext: place.culturalContext ?? "",
           attireSuggestion: place.attireSuggestion ?? "",
         });
+
+        // Highlight the newly added activity
+        markActivityAdded(actId);
+        setTimeout(() => clearActivityHighlight(actId), 3500);
       }
       return;
     }
@@ -309,7 +325,7 @@ export function AIAssistant({ currentStep = "itinerary" }: AIAssistantProps): Re
 
   const [position, setPosition] = useState<{ x: number; y: number } | null>(() => {
     if (typeof window === "undefined") return null;
-    return { x: window.innerWidth - 400, y: window.innerHeight - 536 };
+    return { x: window.innerWidth - 400, y: 20 };
   });
   const [size, setSize] = useState({ w: 384, h: 500 });
 

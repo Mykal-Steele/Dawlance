@@ -7,6 +7,8 @@ interface ItineraryStore {
   historyIndex: number;
   canUndo: boolean;
   canRedo: boolean;
+  /** IDs of activities recently added/modified by the AI — used for the highlight animation */
+  highlightedActivityIds: Set<string>;
   updateItinerary: (itinerary: Itinerary | null) => void;
   editActivity: (dayIndex: number, activityIndex: number, changes: Partial<Activity>) => void;
   reorderActivities: (dayIndex: number, fromIndex: number, toIndex: number) => void;
@@ -15,6 +17,10 @@ interface ItineraryStore {
   addActivity: (dayIndex: number, activityIndex: number, activity: Activity) => void;
   /** Replace an empty-type slot by id with a filled activity */
   fillEmptySlot: (dayIndex: number, slotId: string, activity: Activity) => void;
+  /** Mark an activity as recently added so it gets a highlight animation */
+  markActivityAdded: (id: string) => void;
+  /** Remove an activity from the highlight set */
+  clearActivityHighlight: (id: string) => void;
   undo: () => void;
   redo: () => void;
 }
@@ -27,6 +33,19 @@ export const useItineraryStore = create<ItineraryStore>((set, _get) => ({
   historyIndex: -1,
   canUndo: false,
   canRedo: false,
+  highlightedActivityIds: new Set<string>(),
+
+  markActivityAdded: (id: string) =>
+    set((state) => ({
+      highlightedActivityIds: new Set([...state.highlightedActivityIds, id]),
+    })),
+
+  clearActivityHighlight: (id: string) =>
+    set((state) => {
+      const next = new Set(state.highlightedActivityIds);
+      next.delete(id);
+      return { highlightedActivityIds: next };
+    }),
 
   updateItinerary: (itinerary: Itinerary | null) =>
     set((state) => {
